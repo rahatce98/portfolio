@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-# Replace the host below with your live address after deploying.
-# Sitemap: https://your-domain.example/sitemap.xml
+Sitemap: https://rahatce98.github.io/portfolio/sitemap.xml

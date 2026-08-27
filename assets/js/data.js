@@ -339,7 +339,7 @@ const SITE = {
       "Civil Engineer specializing in infrastructure, water and sanitation networks, GIS, " +
       "digital engineering and emerging technology.",
     // Set this after deploying, e.g. "https://rahatce98.github.io/portfolio/"
-    canonical: ""
+    canonical: "https://rahatce98.github.io/portfolio/"
   }
 };
 
