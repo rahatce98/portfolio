@@ -749,7 +749,7 @@ a { color: inherit; }
 
 .hero__stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -792,8 +792,8 @@ a { color: inherit; }
    CONTENT BLOCKS
    ========================================================================== */
 
-.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
-.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 18px; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 18px; }
 
 .card {
   position: relative;
@@ -913,7 +913,7 @@ a { color: inherit; }
 .filter:hover { color: var(--ink); border-color: var(--line-2); }
 .filter[data-on='true'] { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
 
-.projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+.projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 18px; }
 
 /* Real 3D tilt: the card rotates in perspective space on pointer move. */
 .pcard {
@@ -958,7 +958,7 @@ a { color: inherit; }
 .pcard__role { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
 
 /* Technology / lab ------------------------------------------------------ */
-.labgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.labgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
 .labitem {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 13px 16px;
