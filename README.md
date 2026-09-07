@@ -1,153 +1,227 @@
-# Md. Rahat Hossain — Portfolio
+# Md. Rahat Hossain — Interactive 3D Engineering Portfolio
 
-A static personal portfolio. No build step, no framework, no dependencies to install,
-no paid service anywhere in the stack. Open `index.html` and it runs.
+An interactive WebGL portfolio built with React, Three.js and React Three Fiber, deployed to
+GitHub Pages at **<https://rahatce98.github.io/portfolio/>**.
+
+The rocket, the vehicle and the mechanical systems are real 3D scenes you can orbit, take
+apart, and inspect component by component — not images, and not CSS pretending to be 3D.
+
+---
+
+## 1. Repository layout
+
+This repo holds **both the source and the built site**, because GitHub Pages for this
+repository is configured as *Deploy from a branch → `main` / `(root)`*. Pages serves the top
+level, so the compiled `index.html` has to live there. The source therefore lives one level
+down, in `app/`.
 
 ```
-rahat-portfolio/
-├─ index.html              ← page structure + SEO meta
-├─ robots.txt
-├─ sitemap.xml
-└─ assets/
-   ├─ favicon.svg          ← RH monogram
-   ├─ css/style.css        ← design system + layout
-   ├─ img/
-   │  ├─ profile.jpg       ← YOUR PHOTO GOES HERE (see below)
-   │  └─ og-cover.png      ← social share image
-   └─ js/
-      ├─ data.js           ← ALL CONTENT LIVES HERE
-      └─ main.js           ← rendering + behaviour
+portfolio/
+│
+├─ index.html            ← BUILT — this is what GitHub Pages serves
+├─ build/                ← BUILT — hashed JS + CSS
+├─ assets/               ← BUILT — images, favicon (copied from app/public)
+├─ 404.html robots.txt sitemap.xml .nojekyll     ← BUILT
+│
+├─ app/                  ← SOURCE (the Vite root)
+│  ├─ index.html         ← source HTML entry: meta, fonts, JSON-LD, no-JS fallback
+│  ├─ public/            ← copied verbatim into the build
+│  │  └─ assets/img/profile.jpg    ← YOUR PHOTO GOES HERE
+│  └─ src/
+│     ├─ main.jsx        ← React entry
+│     ├─ App.jsx         ← page composition + code splitting
+│     ├─ data/
+│     │  ├─ site.js      ← ALL WRITTEN CONTENT LIVES HERE
+│     │  └─ assemblies.js  ← the 3D component lists + their info-panel copy
+│     ├─ three/          ← the WebGL layer
+│     │  ├─ Stage.jsx      ← the single <Canvas> configuration + lighting rig
+│     │  ├─ Rocket.jsx     ← procedural launch vehicle, 6 named components
+│     │  ├─ Car.jsx        ← procedural vehicle, 9 named assemblies
+│     │  ├─ Systems.jsx    ← gear train, truss, flow network
+│     │  ├─ Atmosphere.jsx ← star field, dust, shader grid floor
+│     │  ├─ Rig.jsx        ← camera rig: free orbit + scripted fly-to
+│     │  └─ materials.js   ← shared material library
+│     ├─ sections/       ← one file per page section
+│     ├─ components/     ← nav, loader, control panel, info panel, cards
+│     ├─ hooks/          ← scroll, visibility, device tier, pointer
+│     └─ styles/global.css ← the whole design system
+│
+├─ scripts/publish.mjs   ← mirrors dist/ up to the repo root
+└─ vite.config.js
 ```
 
 ---
 
-## 1. Add your photo (do this first)
+## 2. Running it locally
 
-Save your professional headshot as:
+Requires Node 18+.
 
+```bash
+npm install
 ```
-assets/img/profile.jpg
+
+```bash
+npm run dev
 ```
 
-Square, roughly 800×800 px, under ~300 KB. Until that file exists the hero shows the
-**RH** monogram instead — the site never breaks, it just falls back.
+Then open <http://localhost:5178/portfolio/> — note the `/portfolio/` path. The dev server
+respects the same `base` as production, so what you see locally is what Pages serves.
 
-To use a different filename or format, change `person.photo` in `assets/js/data.js`.
-
----
-
-## 2. Update content
-
-**Everything you will ever want to change is in `assets/js/data.js`.**
-You never touch HTML or CSS to add content.
-
-| To add… | Edit this key in `data.js` |
+| Command | What it does |
 |---|---|
-| A project | `projects` — copy an existing object, change the fields |
-| A project category | `projectCategories` — the filter button appears automatically |
-| A job | `experience` |
-| A degree | `education` |
-| A skill or tool | `expertise` → the matching group's `items` |
-| Something you're learning | `lab.items` |
-| What you're working on now | `now.items` and `now.updated` |
-| A social link | `socials` |
-| Email / WhatsApp | `contact` |
-| Page title / description | `seo` |
-
-### Project fields
-
-```js
-{
-  title: "Project name",
-  category: "Project Monitoring",     // must match one in projectCategories
-  badge: "Engineering Tool",          // e.g. Personal Project / Prototype / Professional Work
-  art: "grid",                        // grid | network | contour | flow | signal | geometric
-  description: "Two or three sentences.",
-  role: "What you actually did",
-  tech: ["Tool", "Tool"],
-  links: {                            // omit any key and its button disappears
-    demo: "https://…",
-    repo: "https://github.com/…",
-    detail: "https://…"
-  }
-}
-```
-
-`art` picks a generated abstract visual drawn in SVG — no stock photos, no image files,
-no loading cost.
+| `npm run dev` | Dev server with hot reload |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serves the built `dist/` at <http://localhost:4178/portfolio/> |
+| `npm run publish:pages` | Builds **and** mirrors `dist/` to the repo root, ready to commit |
 
 ---
 
-## 3. Run it locally
+## 3. Deploying
 
-Just double-click `index.html`. Or, for a proper local server:
+### The normal flow
 
 ```bash
-python -m http.server 4321
+npm run publish:pages
 ```
-
-Then open `http://localhost:4321`.
-
----
-
-## 4. Publish it — free
-
-### GitHub Pages (recommended, free forever)
 
 ```bash
-git init
-git add .
-git commit -m "Portfolio"
-git branch -M main
-git remote add origin https://github.com/rahatce98/portfolio.git
-git push -u origin main
+git add -A && git commit -m "Update site" && git push
 ```
 
-Then on GitHub: **Settings → Pages → Source: `main` / root → Save**.
-Live in a minute at `https://rahatce98.github.io/portfolio/`.
+That is the whole deployment. `publish:pages` runs the build and then copies the output to
+the repo root; pushing to `main` is what makes it live. GitHub Pages picks the change up
+within a minute or two.
 
-### Alternatives (also free)
+`scripts/publish.mjs` is deliberately conservative — it removes only the top-level names the
+current build actually produced, refuses to run if `dist/index.html` is missing, and will
+never touch `app/`, `scripts/`, `node_modules/`, or any git metadata.
 
-- **Netlify** — drag the whole folder onto app.netlify.com/drop.
-- **Cloudflare Pages** — connect the repo, no build command, output directory `/`.
-- **Vercel** — import the repo, framework preset "Other".
+### First-time Pages setup
 
-### After publishing
+If Pages is ever reset, restore it under **Settings → Pages**:
 
-1. In `assets/js/data.js`, set `seo.canonical` to your live URL.
-2. In `index.html`, set the same URL in **two places** — `<link id="canonical" href="…">`
-   and `<meta property="og:url" content="…">` — and make `og:image` / `twitter:image`
-   absolute, e.g. `https://rahatce98.github.io/portfolio/assets/img/og-cover.png`.
-   Link preview scrapers (LinkedIn, X, WhatsApp) do **not** run JavaScript, so these
-   two tags must be correct in the HTML itself, not only in `data.js`.
-3. In `sitemap.xml`, replace `https://your-domain.example/` with the same URL.
-4. In `robots.txt`, uncomment the `Sitemap:` line and set the same URL.
+- **Source:** Deploy from a branch
+- **Branch:** `main`, folder `/ (root)`
 
-The page `<title>`, description and social card text are already hard-coded in
-`index.html`, so previews work correctly the moment the site is live.
+### Optional: build on GitHub instead
+
+`.github/workflows/deploy.yml` can build and deploy from Actions, which keeps compiled files
+out of git. It is **manual-dispatch only** so it cannot fight the committed-build flow above.
+To switch over: set **Settings → Pages → Source** to *GitHub Actions*, then run the workflow
+from the Actions tab. Once that works you can stop committing `index.html`, `build/` and
+`assets/`.
+
+### Changing the URL
+
+Everything hangs off one value. If the repo is renamed, or you move to a custom domain, edit
+`base` in `vite.config.js` (`'/portfolio/'` → `'/new-name/'`, or `'/'` for a custom domain),
+then update `seo.canonical` in `app/src/data/site.js` and the absolute URLs in
+`app/index.html`, `app/public/sitemap.xml` and `app/public/404.html`. Nothing in `src/`
+hard-codes a path — runtime asset references go through `import.meta.env.BASE_URL`.
 
 ---
 
-## 5. Extending later
+## 4. Editing the content
 
-The structure is deliberately open-ended. To add a blog, case studies, calculators,
-certifications or a resume download:
+**Everything you will normally want to change is in `app/src/data/site.js`.** No component
+reads a hard-coded string; every list renders itself.
 
-- **New section** — add a `<section id="…">` in `index.html`, a `render…()` function in
-  `main.js`, and its content array in `data.js`. Follow any existing section as the pattern.
-- **New page** — copy `index.html`, keep the same `<head>` and nav, swap the `<main>`.
-- **Resume button** — set `person.resume` in `data.js` to a PDF path; the hero button
-  appears on its own.
-- **Multi-page / i18n** — content is already separated from markup, so a second
-  `data-bn.js` and a language switch is a small change.
+| To change | Edit |
+|---|---|
+| Name, role, intro, photo, CV link | `person` |
+| Email, WhatsApp, location | `contact` |
+| Social links | `socials` |
+| About copy and the three pillars | `about` |
+| Skill groups | `expertise` |
+| The Engineering × Technology chain | `chain` |
+| Jobs | `experience` |
+| Degrees | `education` |
+| Projects and their filters | `projects`, `projectCategories` |
+| What you are learning | `lab.items` |
+| What you are working on now | `now` |
+| Page title / description / canonical URL | `seo` |
+| Nav items and section order | `sections` |
 
-## 6. Accessibility & performance notes
+### Your photo
 
-- Semantic landmarks, single `h1`, ordered heading levels, skip link, visible focus rings.
-- Full keyboard operation, including the mobile menu (Escape closes it).
-- `prefers-reduced-motion` disables all animation; the layout still stands on its own.
-- No images except your photo and the social card — every other visual is CSS/SVG.
-- Fonts load from Google Fonts with `display=swap`; remove the `<link>` in `index.html`
-  and the system font stack takes over cleanly if you prefer zero external requests.
-- The contact form has no backend by design. It composes a message in the visitor's own
-  mail client. It never shows a fake "sent" confirmation.
+Save a square portrait (~800×800, under ~300 KB) to:
+
+```
+app/public/assets/img/profile.jpg
+```
+
+If the file is missing the site falls back to the **RH** monogram rather than breaking.
+
+### The 3D component lists
+
+`app/src/data/assemblies.js` drives the labs. Each entry gives a component its label, code,
+explode offset, camera framing and the text shown in the information panel. Add an object to
+`ROCKET_COMPONENTS` or `CAR_COMPONENTS` and the stepper, the progress ticks, the info panel,
+the explode maths and the camera framing all pick it up — the only extra work is drawing the
+geometry in `three/Rocket.jsx` or `three/Car.jsx` and giving its `<Part>` the matching id.
+
+---
+
+## 5. How the 3D works
+
+### The models are procedural, not downloaded
+
+Every object is generated from Three.js geometry at runtime. That is a deliberate choice, not
+a shortcut:
+
+- **The disassembly requires it.** A downloaded GLB is a single fused mesh. It cannot be split
+  into a nose cone, a fuel tank and a nozzle that are individually clickable, labelled and
+  animatable. Authoring the hierarchy is the only way that feature exists at all.
+- **It costs nothing to download.** There are no `.glb` files, so there is no multi-megabyte
+  model fetch, no Draco decoder to ship, and nothing to lazy-load but code.
+- **No licence ambiguity.** Nothing here is derived from third-party art.
+
+The nose cone is a real tangent-ogive profile, the nozzle is a converging–diverging bell with
+a parabolic expansion, the gear pair meshes at a true 1 : 2.4 ratio derived from its tooth
+counts, and the truss members change colour with the sign of their axial force as the load
+traverses the span.
+
+### Performance
+
+- **Device tiering** (`hooks/useEnv.js`) sets particle counts, geometry segment counts, the
+  device-pixel-ratio ceiling and whether shadows are enabled. Low-power devices get a
+  simplified scene; the Engineering Systems canvas degrades to a text panel.
+- **Visibility gating** — every canvas sets `frameloop="never"` when its section scrolls out
+  of view. Off-screen scenes cost nothing per frame but keep their context and compiled
+  shaders warm, so scrolling back is instant.
+- **Code splitting** — `three`, `@react-three/*`, React and each lab section are separate
+  chunks. The page shell and hero copy paint before the WebGL stack is parsed.
+- **No HDRI fetch.** Reflections come from an in-scene environment built from emissive planes
+  and baked once to a small cube target, instead of pulling several megabytes of HDR from a
+  CDN.
+- **Shared materials.** Every material is a module-level singleton, so the shader program
+  count stays flat as parts are added. Highlighting clones rather than mutates them.
+
+### Accessibility and preferences
+
+- `prefers-reduced-motion` suppresses autonomous motion — auto-rotation, drift, camera sway,
+  scroll-coupled parallax and reveal animations — **without** removing the 3D content. A
+  motion preference is not a statement about the GPU, so the two are handled separately.
+- Every control is a real `<button>` with a title and `aria-pressed`; the component list is a
+  proper listbox; the labs are fully operable from the panel without dragging.
+- Without WebGL, each scene renders a written fallback and the rest of the page is unaffected.
+- Without JavaScript, `index.html` carries a readable summary and contact links.
+
+---
+
+## 6. Known limitations
+
+- `@react-three/fiber` logs a `THREE.Clock is deprecated` warning on newer Three.js versions.
+  It comes from inside the library, not from this code, and is harmless.
+- The Rocket Lab is a scroll-driven sequence, so its section is deliberately tall. The nav
+  rail and the component stepper both jump straight to any stage.
+- There is no contact form. A static Pages site has no server to post one to, and a form that
+  silently discarded submissions would be worse than none — the contact section uses real
+  `mailto:` and `wa.me` links instead.
+
+---
+
+## 7. Stack
+
+React 19 · Three.js · React Three Fiber 9 · Drei 10 · Vite 7 — no CSS framework, no icon
+package, no analytics, no trackers.

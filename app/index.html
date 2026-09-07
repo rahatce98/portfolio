@@ -16,8 +16,8 @@
 
     <!-- Icons. Vite rewrites these against `base`, so they resolve under the
          /portfolio/ subpath as well as at a domain root. -->
-    <link rel="icon" type="image/svg+xml" href="/portfolio/assets/favicon.svg" />
-    <link rel="apple-touch-icon" href="/portfolio/assets/img/profile.jpg" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="apple-touch-icon" href="/assets/img/profile.jpg" />
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
@@ -88,11 +88,6 @@
         if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
       } catch (e) {}
     </script>
-    <script type="module" crossorigin src="/portfolio/build/index-DkTAj2HL.js"></script>
-    <link rel="modulepreload" crossorigin href="/portfolio/build/react-B8AvdffO.js">
-    <link rel="modulepreload" crossorigin href="/portfolio/build/three-BJhZgGrB.js">
-    <link rel="modulepreload" crossorigin href="/portfolio/build/r3f-BxBGoLKh.js">
-    <link rel="stylesheet" crossorigin href="/portfolio/build/index-BJUM635e.css">
   </head>
 
   <body>
@@ -113,5 +108,6 @@
         </p>
       </div>
     </noscript>
+    <script type="module" src="./src/main.jsx"></script>
   </body>
 </html>

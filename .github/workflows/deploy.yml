@@ -1,0 +1,62 @@
+# Optional: build and deploy from GitHub Actions instead of committing the build.
+#
+# This is MANUAL-DISPATCH ONLY, on purpose. The live site is currently served by
+# "Deploy from a branch -> main / (root)", and the build output is committed to
+# the repository root by `npm run publish:pages`. If this workflow ran on every
+# push while Pages is still set to branch mode, it would fail on every commit
+# and tell you nothing useful.
+#
+# To switch to Actions-based deploys:
+#   1. Settings -> Pages -> Source: GitHub Actions
+#   2. Actions tab -> "Deploy to GitHub Pages" -> Run workflow
+#   3. Once it succeeds, you can stop committing index.html, build/ and assets/
+#      (add them to .gitignore) and deploy by pushing alone after switching the
+#      trigger below to `push`.
+
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; let an in-flight one finish rather than cancelling.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
