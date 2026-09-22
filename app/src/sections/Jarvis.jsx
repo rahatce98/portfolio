@@ -20,14 +20,16 @@ const LABS = {
   systems: 'systems', mechanism: 'systems', mechanisms: 'systems', gear: 'systems',
   pipe: 'pipe', sewer: 'pipe', hydraulics: 'pipe', manning: 'pipe', flow: 'pipe',
   beam: 'beam', structure: 'beam', moment: 'beam', shear: 'beam',
+  engine: 'engine', turbofan: 'engine', jet: 'engine', turbine: 'engine', cinematic: 'engine',
 };
 
 const HELP = [
   ['open <tool>', 'launch a tool — “open rfi”'],
   ['find <words>', 'filter the tool index'],
   ['go <section>', 'tools · projects · lab · contact'],
-  ['lab <name>', 'rocket · car · systems · pipe · beam'],
+  ['lab <name>', 'engine · rocket · car · systems · pipe · beam'],
   ['add tool', 'new index entry (owner)'],
+  ['vault', 'encrypted passwords & codes'],
   ['theme', 'toggle light / dark'],
   ['time · date · stats', 'system readouts'],
   ['shortcuts', 'keyboard map'],
@@ -140,6 +142,10 @@ export default function Jarvis() {
       scrollTo('tools');
       return say('Opening a new entry. Paste the link — I’ll do the rest.');
     }
+    if (/^(vault|passwords?|secrets?|codes?)/.test(s)) {
+      window.dispatchEvent(new Event('rh-vault'));
+      return say('Opening the vault. Your master password never leaves this device.');
+    }
     if (/^(unlock|login|admin)/.test(s)) {
       scrollTo('tools');
       setTimeout(() => window.dispatchEvent(new Event('rh-unlock')), 400);
@@ -149,7 +155,7 @@ export default function Jarvis() {
       scrollTo('contact');
       return say(`Reach Rahat at ${contact.email}. Contact section is below.`);
     }
-    if ((m = s.match(/^(?:lab|launch lab|open lab|show lab|simulate)\s+(.+)$/)) || (m = s.match(/^(rocket|car|supercar|systems|pipe|beam)$/))) {
+    if ((m = s.match(/^(?:lab|launch lab|open lab|show lab|simulate)\s+(.+)$/)) || (m = s.match(/^(rocket|car|supercar|systems|pipe|beam|engine|turbofan|jet)$/))) {
       const key = Object.keys(LABS).find((k) => m[1].includes(k));
       if (key) {
         window.dispatchEvent(new CustomEvent('rh-lab', { detail: LABS[key] }));

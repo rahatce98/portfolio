@@ -17,7 +17,7 @@ const MAP = [
     ['?', 'This keyboard map'],
   ]],
   ['Inside a lab', [
-    ['1 – 5', 'Switch lab'],
+    ['1 – 6', 'Switch lab'],
     ['← →', 'Previous / next lab'],
     ['F', 'Native full screen'],
     ['Esc', 'Exit lab'],

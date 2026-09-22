@@ -1,0 +1,42 @@
+/* LAB-06 Turbofan — cinematic scroll film */
+.engine__track { position: relative; height: 700vh; }
+.engine__sticky { position: sticky; top: 58px; height: calc(100vh - 58px); overflow: hidden; cursor: grab; touch-action: pan-y; background: radial-gradient(1200px 700px at 60% 40%, #0b1424, #04060b 70%); }
+.engine__sticky:active { cursor: grabbing; }
+.engine__canvas { position: absolute !important; inset: 0; }
+.engine__hud { position: absolute; z-index: 2; pointer-events: none; }
+.engine__hud--tl { left: clamp(16px, 4vw, 56px); top: clamp(20px, 6vh, 64px); max-width: 420px; }
+.engine__hud--tl .mono { color: var(--accent); }
+.engine__hud--tl h3 { margin: 10px 0 8px; font-size: clamp(2.2rem, 5vw, 4.2rem); line-height: 1; letter-spacing: -0.05em; font-weight: 600; animation: capIn 0.7s var(--spring); }
+.engine__hud--tl p { margin: 0; color: var(--ink-2); font-size: 1rem; line-height: 1.55; animation: capIn 0.7s 0.08s var(--spring) both; }
+@keyframes capIn { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } }
+.engine__hud--r { right: clamp(12px, 3vw, 40px); top: 50%; transform: translateY(-50%); display: grid; gap: 4px; pointer-events: auto; }
+.engine__hud--r button { all: unset; cursor: pointer; display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 6px 4px; font: 400 0.64rem var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+.engine__hud--r button i { width: 18px; height: 2px; border-radius: 2px; background: var(--line-2); transition: all 0.4s var(--spring); }
+.engine__hud--r button[data-done='true'] i { background: var(--accent); opacity: 0.5; }
+.engine__hud--r button[data-on='true'] { color: var(--ink); }
+.engine__hud--r button[data-on='true'] i { width: 34px; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+@media (max-width: 760px) { .engine__hud--r span { display: none; } }
+.engine__hud--b { left: 0; right: 0; bottom: 0; padding: 0 clamp(16px, 4vw, 56px) 22px; pointer-events: auto; }
+.engine__bar { height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 14px; }
+.engine__bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transform-origin: 0 50%; }
+.engine__cfg { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 10px; border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--bg) 60%, transparent); backdrop-filter: blur(14px) saturate(150%); cursor: default; }
+.engine__cfg .eng__seg { flex: 0 1 auto; }
+.engine__cfg .eng__seg button { display: inline-flex; align-items: center; gap: 8px; }
+.engine__sw { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4); }
+.engine__thrust { display: grid; gap: 4px; min-width: 180px; }
+.engine__thrust input { accent-color: var(--warn); }
+.engine__hint { margin-left: auto; }
+@media (max-width: 760px) { .engine__hint { display: none; } }
+
+/* lab grid: hero card + 2×3 */
+.labgrid2 .lcard:nth-child(1) { grid-column: 1 / -1 !important; min-height: 260px; grid-template-columns: 1fr 1.2fr; grid-template-rows: auto 1fr auto auto; column-gap: 32px; }
+.labgrid2 .lcard:nth-child(1) .lart { grid-column: 2; grid-row: 1 / span 5; max-height: 220px; align-self: center; }
+.labgrid2 .lcard:nth-child(1) .lcard__label { font-size: 2rem; }
+.labgrid2 .lcard:nth-child(n + 2):nth-child(-n + 4) { grid-column: span 2; }
+.labgrid2 .lcard:nth-child(n + 5) { grid-column: span 3; }
+@media (max-width: 900px) { .labgrid2 .lcard:nth-child(1) { grid-template-columns: 1fr; } .labgrid2 .lcard:nth-child(1) .lart { grid-column: 1; grid-row: auto; } }
+.lcard[data-art='engine']::before { background: radial-gradient(520px circle at 70% 50%, rgba(255, 138, 58, 0.14), transparent 60%); }
+.lcard[data-art='engine'] .lcard__top .mono { color: var(--warn); }
+.lart__fan { transform-box: fill-box; transform-origin: center; animation: spin 4s linear infinite; }
+.lcard:hover .lart__fan { animation-duration: 0.5s; }
+.lart__jet { stroke: var(--warn); animation: flame 0.2s ease-in-out infinite alternate; transform-origin: 98px 60px; }

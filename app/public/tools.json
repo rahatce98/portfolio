@@ -2,6 +2,24 @@
   "_readme": "Baseline public tool index. Private links and edits live in the Portfolio Index API (owner PIN), not in this public file.",
   "tools": [
     {
+      "id": "vault",
+      "name": "Vault — passwords & codes",
+      "owner": "Rahat",
+      "project": "Personal",
+      "category": "Security",
+      "kind": "Vault",
+      "status": "live",
+      "description": "Zero-knowledge encrypted store for IDs, passwords, passcodes and API keys. Opens with PIN + master password.",
+      "url": "https://rahatce98.github.io/portfolio/#vault",
+      "tags": [
+        "vault",
+        "password",
+        "security",
+        "encrypted"
+      ],
+      "added": "2026-09-23"
+    },
+    {
       "id": "cd-studio",
       "name": "CD Studio",
       "owner": "Rahat",

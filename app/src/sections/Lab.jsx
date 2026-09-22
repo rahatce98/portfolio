@@ -18,6 +18,7 @@ const AutoLab = lazy(() => import('./AutoLab'));
 const SystemsSection = lazy(() => import('./SystemsSection'));
 const PipeLab = lazy(() => import('./PipeLab'));
 const BeamLab = lazy(() => import('./BeamLab'));
+const EngineLab = lazy(() => import('./EngineLab'));
 
 function Wrapped({ C, code, title, lead }) {
   return (
@@ -37,6 +38,7 @@ function Wrapped({ C, code, title, lead }) {
 }
 
 export const LABS = [
+  { id: 'engine', code: 'LAB-00', group: 'Cinematic', label: 'Turbofan', note: 'A scroll-scrubbed product film: blueprint → materialize → explode → fly-through → reassemble.', art: 'engine', render: () => <EngineLab /> },
   { id: 'rocket', code: 'LAB-01', group: '3D', label: 'Launch Vehicle', note: 'Scroll to disassemble a two-stage rocket, stage by stage.', art: 'rocket', render: () => <RocketLab /> },
   { id: 'auto', code: 'LAB-02', group: '3D', label: 'Supercar', note: 'Nine assemblies. Explode, orbit, and inspect each one.', art: 'car', render: () => <AutoLab /> },
   { id: 'systems', code: 'LAB-03', group: '3D', label: 'Mechanisms', note: 'Gears, pistons and linkages running in real time.', art: 'gear', render: () => <SystemsSection /> },
@@ -84,6 +86,15 @@ function Art({ kind }) {
           <circle cx="60" cy="60" r="36" />
           <path className="lart__water" d="M28 72c8-3 16 3 24 0s16-3 24 0 12 2 16 0v0a36 36 0 0 1-64 0z" />
           <path d="M28 72h64" strokeDasharray="3 3" />
+        </svg>
+      );
+    case 'engine':
+      return (
+        <svg viewBox="0 0 120 120" className="lart lart--engine">
+          <path d="M22 38h58l18 10v24l-18 10H22z" />
+          <g className="lart__fan"><circle cx="30" cy="60" r="20" /><path d="M30 40v40M10 60h40M16 46l28 28M16 74l28-28" /></g>
+          <path className="lart__jet" d="M98 52l18 8-18 8" />
+          <path d="M50 38v44M66 38v44" strokeDasharray="2 3" />
         </svg>
       );
     default:
@@ -135,7 +146,7 @@ export default function Lab() {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === 'Escape') exit();
-      else if (/^[1-5]$/.test(e.key)) open(LABS[+e.key - 1].id);
+      else if (/^[1-6]$/.test(e.key)) open(LABS[+e.key - 1].id);
       else if (e.key === 'ArrowRight' || e.key === ']') open(LABS[(idx + 1) % LABS.length].id);
       else if (e.key === 'ArrowLeft' || e.key === '[') open(LABS[(idx - 1 + LABS.length) % LABS.length].id);
       else if (e.key.toLowerCase() === 'f') {
@@ -154,12 +165,12 @@ export default function Lab() {
           <div>
             <span className="section-head__index">06 — Lab</span>
             <h2>
-              Learn by building<span className="dim"> — five working studies.</span>
+              Learn by building<span className="dim"> — six working studies.</span>
             </h2>
           </div>
           <p>
             Real-time 3D machines and live civil-engineering calculators. Each opens full screen;
-            nothing downloads until you pick one. Keys <kbd>1</kbd>–<kbd>5</kbd>, <kbd>Esc</kbd> to return.
+            nothing downloads until you pick one. Keys <kbd>1</kbd>–<kbd>6</kbd>, <kbd>Esc</kbd> to return.
           </p>
         </div>
 

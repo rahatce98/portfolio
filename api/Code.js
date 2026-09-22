@@ -69,6 +69,30 @@ function authed_(pin) {
   return !!h && hash_(pin) === h;
 }
 
+/* Brute-force guard: 5 wrong PINs lock writes for 15 minutes. CacheService
+   needs no OAuth scope, so this adds no permission prompt. */
+var C = CacheService.getScriptCache();
+function locked_() { return Number(C.get('fails') || 0) >= 5; }
+function fail_() { C.put('fails', String(Number(C.get('fails') || 0) + 1), 900); }
+
+/* Encrypted vault. The browser encrypts with the owner's master password
+   (PBKDF2 + AES-GCM) before sending; this script only ever holds ciphertext.
+   Stored in chunks because one property is capped at 9 KB. The previous
+   version is kept as vaultbak_* so a bad save can be rolled back. */
+var CHUNK = 8000;
+function readBlob_(prefix) {
+  var n = Number(P.getProperty(prefix + 'n') || 0), out = '';
+  for (var i = 0; i < n; i++) out += P.getProperty(prefix + i) || '';
+  return out;
+}
+function writeBlob_(prefix, str) {
+  var old = Number(P.getProperty(prefix + 'n') || 0), n = Math.ceil(str.length / CHUNK), map = {};
+  for (var i = 0; i < n; i++) map[prefix + i] = str.slice(i * CHUNK, (i + 1) * CHUNK);
+  map[prefix + 'n'] = String(n);
+  P.setProperties(map);
+  for (var j = n; j < old; j++) P.deleteProperty(prefix + j);
+}
+
 function all_() {
   var props = P.getProperties(), list = [];
   Object.keys(props).forEach(function (k) {
@@ -124,7 +148,28 @@ function doPost(e) {
       P.setProperty('pin', hash_(b.pin));
       return out_({ ok: true });
     }
-    if (!authed_(b.pin)) { Utilities.sleep(600); return out_({ ok: false, error: 'Wrong PIN' }); }
+    if (locked_()) return out_({ ok: false, error: 'Too many wrong PINs. Try again in 15 minutes.' });
+    if (!authed_(b.pin)) { fail_(); Utilities.sleep(800); return out_({ ok: false, error: 'Wrong PIN' }); }
+    C.remove('fails');
+    if (b.a === 'vaultGet') return out_({ ok: true, blob: readBlob_('vault_'), rev: Number(P.getProperty('vault_rev') || 0) });
+    if (b.a === 'vaultPut') {
+      var rev = Number(P.getProperty('vault_rev') || 0);
+      if (b.rev !== rev) return out_({ ok: false, error: 'Vault changed elsewhere — reload first', rev: rev });
+      var blob = String(b.blob || '');
+      if (!/^[{]"v":1,/.test(blob) || blob.length > 400000) return out_({ ok: false, error: 'Bad vault payload' });
+      var prev = readBlob_('vault_');
+      if (prev) writeBlob_('vaultbak_', prev);
+      writeBlob_('vault_', blob);
+      P.setProperty('vault_rev', String(rev + 1));
+      return out_({ ok: true, rev: rev + 1 });
+    }
+    if (b.a === 'vaultUndo') {
+      var bak = readBlob_('vaultbak_');
+      if (!bak) return out_({ ok: false, error: 'No earlier version' });
+      writeBlob_('vault_', bak);
+      P.setProperty('vault_rev', String(Number(P.getProperty('vault_rev') || 0) + 1));
+      return out_({ ok: true });
+    }
     if (b.a === 'check') return out_({ ok: true });
     if (b.a === 'upsert') {
       var t = clean_(b.tool || {});

@@ -1,0 +1,65 @@
+/* Vault overlay */
+.vault {
+  position: fixed; inset: 0; z-index: 350;
+  display: grid; place-items: start center; padding: 5vh 16px 16px; overflow-y: auto;
+  background: radial-gradient(900px 600px at 50% 0%, rgba(124, 140, 255, 0.14), transparent 70%), rgba(2, 4, 8, 0.82);
+  backdrop-filter: blur(14px) saturate(140%);
+  animation: fade 0.25s ease-out;
+}
+.vault__panel {
+  position: relative; width: min(920px, 100%);
+  border: 1px solid var(--line-2); border-radius: 24px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-1) 96%, transparent), var(--bg));
+  box-shadow: 0 80px 160px -60px #000, inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: dlgIn 0.45s var(--spring);
+  overflow: hidden;
+}
+.vault__top { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 22px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.vault__brand { display: flex; align-items: center; gap: 12px; }
+.vault__brand strong { display: block; font-size: 1.1rem; letter-spacing: -0.02em; }
+.vault__brand .mono { font-size: 0.58rem; }
+.vault__lock { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; color: var(--accent-2); border: 1px solid rgba(124, 140, 255, 0.4); background: rgba(124, 140, 255, 0.1); transition: all 0.4s var(--spring); }
+.vault__lock[data-open='true'] { color: var(--ok); border-color: rgba(53, 224, 138, 0.45); background: rgba(53, 224, 138, 0.1); }
+.vault__acts { display: flex; gap: 8px; }
+.vault__gate { display: grid; gap: 12px; justify-items: stretch; max-width: 440px; margin: 0 auto; padding: 44px 22px 48px; text-align: center; }
+.vault__gate h3 { margin: 0; font-size: 1.6rem; letter-spacing: -0.035em; font-weight: 600; }
+.vault__gate p { margin: 0 0 6px; color: var(--ink-2); font-size: 0.9rem; line-height: 1.55; }
+.vault__gate input, .vault__quick input, .vault__filter input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--line-2); border-radius: 12px;
+  background: var(--bg); color: var(--ink); font: 400 0.95rem var(--font); outline: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.vault__gate input:focus, .vault__quick input:focus, .vault__filter input:focus { border-color: var(--accent-2); box-shadow: 0 0 0 4px rgba(124, 140, 255, 0.2); }
+.vault__gate .tbtn { justify-content: center; height: 44px; }
+.vault__gate .lab__spinner { justify-self: center; }
+.vault__meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.vault__meter i { height: 4px; border-radius: 4px; background: var(--line); transition: background 0.3s; }
+.vault__meter[data-s='1'] i:nth-child(-n + 1), .vault__meter[data-s='2'] i:nth-child(-n + 2) { background: var(--warn); }
+.vault__meter[data-s='3'] i:nth-child(-n + 3), .vault__meter[data-s='4'] i { background: var(--ok); }
+.vault__body { padding: 18px 22px 24px; display: grid; gap: 14px; }
+.vault__quick { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 8px; padding: 12px; border: 1px dashed rgba(124, 140, 255, 0.45); border-radius: 16px; background: rgba(124, 140, 255, 0.05); }
+@media (max-width: 700px) { .vault__quick { grid-template-columns: 1fr; } }
+.vault__filter { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.vault__filter input { flex: 1 1 220px; width: auto; padding: 9px 12px; font-size: 0.88rem; }
+.vault__list { display: grid; gap: 8px; }
+.vault__empty { margin: 0; padding: 36px; text-align: center; border: 1px dashed var(--line-2); border-radius: 14px; color: var(--ink-3); }
+.ve { display: grid; gap: 8px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); animation: lineIn 0.3s var(--spring); }
+.ve__head { display: flex; align-items: center; gap: 12px; }
+.ve__glyph { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; font: 600 0.74rem var(--mono); color: var(--accent-2); background: rgba(124, 140, 255, 0.12); border: 1px solid rgba(124, 140, 255, 0.3); }
+.ve__title { flex: 1; min-width: 0; display: grid; }
+.ve__title strong { font-weight: 600; }
+.ve__title span { font: 400 0.7rem var(--mono); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ve__title a { color: var(--accent); text-decoration: none; }
+.ve__row { display: grid; grid-template-columns: 56px 1fr auto auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 10px; background: var(--bg); }
+.ve__row > span { font: 400 0.6rem var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.ve__row code { font: 400 0.84rem var(--mono); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ve__row .tbtn { height: 28px; padding: 0 10px; font-size: 0.74rem; }
+.ve__secret { letter-spacing: 0.08em; }
+.ve__notes { margin: 0; font-size: 0.84rem; color: var(--ink-2); white-space: pre-wrap; }
+.vault__form { position: absolute; inset: 0; z-index: 2; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-content: start; padding: 26px; background: var(--bg-1); animation: dlgIn 0.35s var(--spring); }
+.vault__form h3, .vault__form footer { grid-column: 1 / -1; }
+.vault__form h3 { margin: 0; font-size: 1.4rem; letter-spacing: -0.03em; }
+.vault__form footer { display: flex; justify-content: flex-end; gap: 8px; }
+.vault__pw { display: flex; gap: 6px; }
+.vault__pw input { flex: 1; min-width: 0; }
+@media (max-width: 600px) { .vault__form { grid-template-columns: 1fr; } }

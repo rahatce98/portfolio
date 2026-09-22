@@ -12,6 +12,7 @@ import CommandPalette from './components/CommandPalette';
 import Jarvis from './sections/Jarvis';
 import Shortcuts from './components/Shortcuts';
 import ToastHost from './components/Toast';
+import Vault from './components/Vault';
 import { person, seo, socials } from './data/site';
 import { hasWebGL } from './hooks/useEnv';
 import { useScrollTo } from './hooks/useScroll';
@@ -121,6 +122,7 @@ export default function App() {
       <BackToTop />
       <CommandPalette />
       <Shortcuts />
+      <Vault />
       <ToastHost />
     </>
   );
