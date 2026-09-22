@@ -148,6 +148,11 @@ export const Doc = P(
   </>
 );
 
+export const Facebook = P(<path d="M14 8h3V4h-3a4 4 0 0 0-4 4v2H7v4h3v6h4v-6h3l1-4h-4V8z" />);
+export const Instagram = P(<><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><path d="M17.5 6.5h.01" /></>);
+export const Snapchat = P(<path d="M12 3c3 0 5 2.2 5 5.2v2.3l1.8.6-.8 1.6-1.4-.2c-.6 2-2 3.3-3.6 3.8.3.9 1.6 1.4 3.5 1.8l-.4 1.4-2 .3-.8 1.2c-.7-.3-1.4-.5-2.3-.5s-1.6.2-2.3.5l-.8-1.2-2-.3-.4-1.4c1.9-.4 3.2-.9 3.5-1.8-1.6-.5-3-1.8-3.6-3.8l-1.4.2-.8-1.6L7 10.5V8.2C7 5.2 9 3 12 3z" />);
+export const Globe = P(<><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></>);
+
 /** Name → component, so data files can reference an icon by string. */
 export const ICONS = {
   hardhat: HardHat,
@@ -163,6 +168,10 @@ export const ICONS = {
   email: Mail,
   pin: Pin,
   doc: Doc,
+  facebook: Facebook,
+  instagram: Instagram,
+  snapchat: Snapchat,
+  blog: Globe,
 };
 
 export function Icon({ name, ...props }) {

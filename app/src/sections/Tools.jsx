@@ -18,6 +18,7 @@ import { toast } from '../components/Toast';
 
 export const API =
   'https://script.google.com/macros/s/AKfycbz8HA5JTFXdI0nUFWry56DmPWMv-cQ55LB4wz4pgpI00XGfwwJfBbyiHF7EHF5wGpD-/exec';
+const API_EDITOR = 'https://script.google.com/d/1Vl4_MfYGLL2DCW31xwEcjg5zOeZntxpwaJqObMBY8ZolzjfY1y-OXteu/edit';
 const K_PINS = 'rh-tool-pins';
 const K_RECENT = 'rh-tool-recent';
 const K_CACHE = 'rh-tool-cache';
@@ -54,7 +55,7 @@ async function post(body) {
 }
 
 const bus = new EventTarget();
-let state = { base: null, remote: null, hasPin: true, ready: false, error: '' };
+let state = { base: null, remote: null, hidden: [], owner: null, hasPin: true, ready: false, error: '' };
 function emit(patch) {
   state = { ...state, ...patch };
   bus.dispatchEvent(new Event('change'));
@@ -74,9 +75,12 @@ export function refreshTools() {
       store.set(K_CACHE, j.tools);
       return j;
     });
-  loading = Promise.all([base, remote.catch((e) => ({ err: e }))]).then(([b, r]) => {
-    if (r.err) emit({ base: b, remote: state.remote || store.get(K_CACHE, []), ready: true, error: 'offline' });
-    else emit({ base: b, remote: r.tools, hasPin: r.hasPin, ready: true, error: '' });
+  // Owner session: also pull private + trashed records with the PIN.
+  const pin = store.get(K_SESSION, '', sessionStorage);
+  const owner = pin ? post({ a: 'all', pin }).then((j) => j.tools).catch(() => null) : Promise.resolve(null);
+  loading = Promise.all([base, remote.catch((e) => ({ err: e })), owner]).then(([b, r, o]) => {
+    if (r.err) emit({ base: b, remote: state.remote || store.get(K_CACHE, []), owner: o, ready: true, error: 'offline' });
+    else emit({ base: b, remote: r.tools, hidden: r.hidden || [], owner: o, hasPin: r.hasPin, ready: true, error: '' });
   });
   return loading;
 }
@@ -97,10 +101,11 @@ export function useTools() {
   const tools = useMemo(() => {
     const map = new Map();
     for (const t of state.base || []) map.set(t.id, { ...t, source: 'base' });
-    for (const t of state.remote || []) map.set(t.id, { ...t, source: 'live' });
+    for (const id of state.hidden || []) map.delete(id);
+    for (const t of state.owner || state.remote || []) map.set(t.id, { ...t, source: 'live' });
     return [...map.values()].filter((t) => !t.deleted);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.base, state.remote]);
+  }, [state.base, state.remote, state.hidden, state.owner]);
 
   return { tools, ready: state.ready, hasPin: state.hasPin, error: state.error };
 }
@@ -119,6 +124,7 @@ export function useAdmin() {
 function setAdmin(pin) {
   store.set(K_SESSION, pin || null, sessionStorage);
   window.dispatchEvent(new Event('rh-admin'));
+  refreshTools();
 }
 
 /* ------------------------------------------------------------- helpers --- */
@@ -224,11 +230,12 @@ const Chevron = () => <I d={<path d="m9 6 6 6-6 6" />} />;
 const Trash = () => <I d={<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />} />;
 const Pen = () => <I d={<path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" />} />;
 const Lock = ({ open }) => <I d={<><rect x="5" y="11" width="14" height="9" rx="2" /><path d={open ? 'M8 11V8a4 4 0 0 1 7.8-1.2' : 'M8 11V8a4 4 0 0 1 8 0v3'} /></>} />;
+const EyeOff = () => <I d={<><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.1 6.1C3.6 7.9 2 12 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5-1.4" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /></>} />;
 const Eye = () => <I d={<><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>} />;
 
 /* ---------------------------------------------------------------- card --- */
 
-function ToolCard({ t, pinned, onPin, view, admin, onEdit, onDelete, index }) {
+function ToolCard({ t, pinned, onPin, view, admin, onEdit, onDelete, onVisibility, index }) {
   const [open, setOpen] = useState(false);
   const [peek, setPeek] = useState(false);
   const ref = useRef(null);
@@ -289,6 +296,7 @@ function ToolCard({ t, pinned, onPin, view, admin, onEdit, onDelete, index }) {
             <span className="tool__proj">{t.project || t.owner}</span>
             <span className="tool__sep">/</span>
             {t.kind}
+            {t.visibility === 'private' && <span className="tool__priv">private</span>}
           </p>
         </div>
         <button type="button" className="tool__pin" data-on={pinned} onClick={() => onPin(t.id)} aria-label={pinned ? `Unpin ${t.name}` : `Pin ${t.name}`} aria-pressed={pinned}>
@@ -321,6 +329,16 @@ function ToolCard({ t, pinned, onPin, view, admin, onEdit, onDelete, index }) {
         )}
         {admin && (
           <span className="tool__admin">
+            <button
+              type="button"
+              className="tbtn"
+              data-on={t.visibility !== 'private'}
+              onClick={() => onVisibility(t)}
+              aria-label={t.visibility === 'private' ? `Show ${t.name} publicly` : `Hide ${t.name} from visitors`}
+              title={t.visibility === 'private' ? 'Private: only you see this. Click to publish.' : 'Public: click to hide from visitors'}
+            >
+              {t.visibility === 'private' ? <EyeOff /> : <Eye />}
+            </button>
             <button type="button" className="tbtn" onClick={() => onEdit(t)} aria-label={`Edit ${t.name}`}>
               <Pen />
             </button>
@@ -410,6 +428,16 @@ function PinDialog({ open, onClose, hasPin }) {
           <input autoFocus type="password" autoComplete="current-password" value={v} onChange={(e) => setV(e.target.value)} minLength={4} required />
         </label>
         {err && <p className="addlg__err">{err}</p>}
+        {hasPin && (
+          <details className="addlg__forgot">
+            <summary>Forgot PIN?</summary>
+            <p>
+              Recovery is tied to your Google login. Open the{' '}
+              <a href={API_EDITOR} target="_blank" rel="noreferrer noopener">API project</a>, sign in with your
+              Google account, pick <code>resetPin</code> in the toolbar and press Run. Then come back and set a new PIN.
+            </p>
+          </details>
+        )}
         <footer>
           <button type="button" className="tbtn" onClick={onClose}>Cancel</button>
           <button type="submit" className="tbtn tbtn--go" disabled={busy || v.length < 4}>{busy ? 'Checking…' : hasPin ? 'Unlock' : 'Create PIN'}</button>
@@ -421,7 +449,7 @@ function PinDialog({ open, onClose, hasPin }) {
 
 /* ----------------------------------------------------------- edit dialog --- */
 
-const BLANK = { id: '', name: '', url: '', short: '', owner: 'Rahat', project: '', category: '', kind: '', status: 'live', description: '', tags: '', meta: '' };
+const BLANK = { id: '', name: '', url: '', short: '', owner: 'Rahat', project: '', category: '', kind: '', status: 'live', visibility: 'public', description: '', tags: '', meta: '' };
 
 function toForm(t) {
   if (!t) return BLANK;
@@ -483,6 +511,7 @@ function EditDialog({ open, editing, onClose, categories, projects, pin }) {
       category: f.category.trim() || 'Utility',
       kind: f.kind.trim() || 'Link',
       status: f.status,
+      visibility: f.visibility === 'private' ? 'private' : 'public',
       description: f.description.trim(),
       tags: f.tags.split(',').map((s) => s.trim()).filter(Boolean),
       meta,
@@ -543,6 +572,13 @@ function EditDialog({ open, editing, onClose, categories, projects, pin }) {
             <option value="beta">beta</option>
             <option value="private">private</option>
             <option value="archived">archived</option>
+          </select>
+        </label>
+        <label className="fld fld--wide">
+          <span>Who can see it</span>
+          <select value={f.visibility || 'public'} onChange={set('visibility')}>
+            <option value="public">Public: everyone</option>
+            <option value="private">Private: only me, after unlocking</option>
           </select>
         </label>
         <label className="fld fld--wide">
@@ -712,6 +748,17 @@ export default function Tools() {
     setEditing(t);
     setEditOpen(true);
   };
+  const onVisibility = async (t) => {
+    const next = t.visibility === 'private' ? 'public' : 'private';
+    const { source, ...clean } = t;
+    try {
+      await post({ a: 'upsert', pin, tool: { ...clean, visibility: next } });
+      await refreshTools();
+      toast(next === 'private' ? `Hidden from visitors: ${t.name}` : `Now public: ${t.name}`);
+    } catch (x) {
+      toast(x.message);
+    }
+  };
   const onDelete = async (t) => {
     if (!confirm(`Remove “${t.name}” from the index?\nIt goes to Trash and can be restored.`)) return;
     try {
@@ -836,7 +883,7 @@ export default function Tools() {
 
         {pin && (
           <div className="tadmin">
-            <span><i /> Editor unlocked — changes go live for everyone.</span>
+            <span><i /> Owner mode: private links are visible to you only. The eye button sets what visitors see.</span>
             <button type="button" className="tbtn" onClick={() => setTrash((v) => !v)}><Trash /> Trash</button>
             <button type="button" className="tbtn" onClick={exportAll}><Eye /> Export backup</button>
           </div>
@@ -845,7 +892,7 @@ export default function Tools() {
 
         <div className="tgrid" data-view={view}>
           {shown.map((t, i) => (
-            <ToolCard key={t.id} index={i} t={t} view={view} pinned={pins.includes(t.id)} onPin={togglePin} admin={!!pin} onEdit={onEdit} onDelete={onDelete} />
+            <ToolCard key={t.id} index={i} t={t} view={view} pinned={pins.includes(t.id)} onPin={togglePin} admin={!!pin} onEdit={onEdit} onDelete={onDelete} onVisibility={onVisibility} />
           ))}
           <button type="button" className="tool tool--add" data-view={view} onClick={startAdd}>
             <span className="tool--add__plus"><Plus /></span>

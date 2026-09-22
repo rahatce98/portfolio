@@ -31,6 +31,10 @@ export const socials = [
   { id: 'linkedin', label: 'LinkedIn', handle: 'md-rahathossain', url: 'https://www.linkedin.com/in/md-rahathossain' },
   { id: 'github', label: 'GitHub', handle: 'rahatce98', url: 'https://github.com/rahatce98' },
   { id: 'x', label: 'X', handle: '@RahatZdn', url: 'https://x.com/RahatZdn' },
+  { id: 'facebook', label: 'Facebook', handle: 'rahat.zdn', url: 'https://www.facebook.com/rahat.zdn' },
+  { id: 'instagram', label: 'Instagram', handle: '@rahatzidan', url: 'https://www.instagram.com/rahatzidan' },
+  { id: 'snapchat', label: 'Snapchat', handle: 'Rahat Zidan', url: 'https://www.snapchat.com/add/rahatzidan' },
+  { id: 'blog', label: 'Old blog', handle: 'rahatnew.blogspot.com', url: 'http://rahatnew.blogspot.com/' },
   { id: 'whatsapp', label: 'WhatsApp', handle: '+880 1706 735151', url: 'https://wa.me/8801706735151' },
   { id: 'email', label: 'Email', handle: 'rahat.zdn@gmail.com', url: 'mailto:rahat.zdn@gmail.com' },
 ];

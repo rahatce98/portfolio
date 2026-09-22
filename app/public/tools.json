@@ -1,5 +1,5 @@
 {
-  "_readme": "Tool index for rahatce98.github.io/portfolio. Add an object to `tools` and commit — the live site reads this file straight from GitHub, so no rebuild is needed. Fields: id, name, owner, project, category, kind, status, description, url, short?, tags[], meta{}? , added (YYYY-MM-DD).",
+  "_readme": "Baseline public tool index. Private links and edits live in the Portfolio Index API (owner PIN), not in this public file.",
   "tools": [
     {
       "id": "cd-studio",
@@ -12,7 +12,10 @@
       "description": "Apps Script studio web app — creative / document workspace.",
       "url": "https://script.google.com/macros/s/AKfycbzkywik8W5OnA5VB5PMCX_GYU_MViOLtj5R8YFhz_YxN8SeesE7RPTKFVmJc4MVp_t1kA/exec",
       "short": "https://tinyurl.com/CD-Studio",
-      "tags": ["apps-script", "studio"],
+      "tags": [
+        "apps-script",
+        "studio"
+      ],
       "meta": {
         "Script ID": "1TCXg3y4Uh-qfZt2KQPGcDCP24FT_BNpJV5sRTSPP0Bxio4ygnjVzfEMq",
         "Deployment": "AKfycbzkywik8W5OnA5VB5PMCX_GYU_MViOLtj5R8YFhz_YxN8SeesE7RPTKFVmJc4MVp_t1kA"
@@ -29,7 +32,11 @@
       "status": "live",
       "description": "Letter register across RFL, DOWHA, DWASA, DNCC and DSCC — reply chains, who-must-reply, duplicates and attachment sync.",
       "url": "https://script.google.com/macros/s/AKfycbw7cDKpJCSXILLHXnUCR-1-xxATx58S7umMLHJCig92NDYYpat8vEYM7tyfJpBdteGpuA/exec",
-      "tags": ["letters", "register", "apps-script"],
+      "tags": [
+        "letters",
+        "register",
+        "apps-script"
+      ],
       "meta": {
         "Script ID": "18j3_w3ovth-1WvWAlREt8_04hMKSiZobxgtgOW3J_ze-R-Q-f09yQzzQ",
         "Deployment": "AKfycbw7cDKpJCSXILLHXnUCR-1-xxATx58S7umMLHJCig92NDYYpat8vEYM7tyfJpBdteGpuA"
@@ -46,7 +53,12 @@
       "status": "live",
       "description": "Request-for-Inspection field form (pipe, manhole, IP, HC, leakage, CCTV), live dashboard and PDF / Excel RFI generator.",
       "url": "https://script.google.com/macros/s/AKfycbyted_aNNVHDwCywZAEuIPtkuA7lW3AFaDG6K2oepm_nH0Js00dvOYNFkcBujtfSpDj/exec",
-      "tags": ["rfi", "survey", "inspection", "apps-script"],
+      "tags": [
+        "rfi",
+        "survey",
+        "inspection",
+        "apps-script"
+      ],
       "meta": {
         "Script ID": "1A0VBLx8crZ5zjgYy9FFRcbx29KlGvgo1QOKPL54HeZkTfmUu9dzT5TO4",
         "Deployment": "AKfycbyted_aNNVHDwCywZAEuIPtkuA7lW3AFaDG6K2oepm_nH0Js00dvOYNFkcBujtfSpDj",
@@ -64,7 +76,12 @@
       "status": "live",
       "description": "Daily programme vs progress entry and register for the sewer network package, by phase, segment and road.",
       "url": "https://script.google.com/macros/s/AKfycbx_Aj8vyxGF6YvBd3nqY_ywc_zAmt46O9mh1V32P4_sXSvYzfxRrBBQw3-0FUQDGkXJ/exec",
-      "tags": ["progress", "programme", "daily report", "apps-script"],
+      "tags": [
+        "progress",
+        "programme",
+        "daily report",
+        "apps-script"
+      ],
       "meta": {
         "Script ID": "18k2YG0-cUClvo8BUZd6QCSaLvSBnizFh6bqGjE4o4ZjShT3HwQdaLrK4",
         "Deployment": "AKfycbx_Aj8vyxGF6YvBd3nqY_ywc_zAmt46O9mh1V32P4_sXSvYzfxRrBBQw3-0FUQDGkXJ"
@@ -81,7 +98,10 @@
       "status": "private",
       "description": "Google-account protected Apps Script web app. Sign-in required.",
       "url": "https://script.google.com/macros/s/AKfycbwNBCXB2fFvMTZKM3gxUL-y1SDU0IGvFwtaCgilc-rYA44h1raEaBqKWEpSp51nZj8WdQ/exec",
-      "tags": ["apps-script", "private"],
+      "tags": [
+        "apps-script",
+        "private"
+      ],
       "meta": {
         "Script ID": "1T75mq_rQj3a-HN-769e7Lzy0_XcUgB-jN5rS9ZJBw4irUoJCUqMrKWh2",
         "Deployment": "AKfycbwNBCXB2fFvMTZKM3gxUL-y1SDU0IGvFwtaCgilc-rYA44h1raEaBqKWEpSp51nZj8WdQ"
@@ -98,7 +118,11 @@
       "status": "live",
       "description": "All script projects — editor, deployments, executions and triggers.",
       "url": "https://script.google.com/home",
-      "tags": ["apps-script", "console", "deploy"],
+      "tags": [
+        "apps-script",
+        "console",
+        "deploy"
+      ],
       "added": "2026-09-22"
     },
     {
@@ -111,7 +135,339 @@
       "status": "live",
       "description": "Source of this site. Edit app/public/tools.json here to add links.",
       "url": "https://github.com/rahatce98/portfolio",
-      "tags": ["github", "source"],
+      "tags": [
+        "github",
+        "source"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "owner": "Rahat",
+      "project": "AI",
+      "category": "AI Assistant",
+      "kind": "Web App",
+      "status": "live",
+      "description": "OpenAI assistant.",
+      "url": "https://chatgpt.com",
+      "tags": [
+        "ai",
+        "llm"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "owner": "Rahat",
+      "project": "AI",
+      "category": "AI Assistant",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Anthropic assistant — coding, writing, research.",
+      "url": "https://claude.ai",
+      "tags": [
+        "ai",
+        "llm"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini",
+      "owner": "Rahat",
+      "project": "AI",
+      "category": "AI Assistant",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Google assistant.",
+      "url": "https://gemini.google.com",
+      "tags": [
+        "ai",
+        "llm"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "grok",
+      "name": "Grok",
+      "owner": "Rahat",
+      "project": "AI",
+      "category": "AI Assistant",
+      "kind": "Web App",
+      "status": "live",
+      "description": "xAI assistant.",
+      "url": "https://grok.com",
+      "tags": [
+        "ai",
+        "llm"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi",
+      "owner": "Rahat",
+      "project": "AI",
+      "category": "AI Assistant",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Moonshot AI assistant — long context.",
+      "url": "https://www.kimi.com",
+      "tags": [
+        "ai",
+        "llm"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "notion",
+      "name": "Notion — second brain",
+      "owner": "Rahat",
+      "project": "Knowledge",
+      "category": "Notes",
+      "kind": "Workspace",
+      "status": "live",
+      "description": "Notes, research and the personal knowledge base.",
+      "url": "https://www.notion.so",
+      "tags": [
+        "notion",
+        "brain",
+        "notes"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "github-profile",
+      "name": "GitHub",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Dev Console",
+      "kind": "Profile",
+      "status": "live",
+      "description": "All repositories and profile.",
+      "url": "https://github.com/rahatce98",
+      "tags": [
+        "github",
+        "code"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "linkedin",
+      "name": "LinkedIn",
+      "owner": "Rahat",
+      "project": "Social",
+      "category": "Profile",
+      "kind": "Profile",
+      "status": "live",
+      "description": "Professional profile.",
+      "url": "https://www.linkedin.com/in/md-rahathossain",
+      "tags": [
+        "linkedin"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "typing",
+      "name": "typing.com",
+      "owner": "Rahat",
+      "project": "Learning",
+      "category": "Practice",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Touch-typing practice.",
+      "url": "https://www.typing.com",
+      "tags": [
+        "typing",
+        "practice"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "binance",
+      "name": "Binance",
+      "owner": "Rahat",
+      "project": "Markets",
+      "category": "Trading",
+      "kind": "Exchange",
+      "status": "live",
+      "description": "Crypto exchange.",
+      "url": "https://www.binance.com",
+      "tags": [
+        "crypto",
+        "trading"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "exness",
+      "name": "Exness",
+      "owner": "Rahat",
+      "project": "Markets",
+      "category": "Trading",
+      "kind": "Broker",
+      "status": "live",
+      "description": "FX / CFD broker.",
+      "url": "https://www.exness.com",
+      "tags": [
+        "forex",
+        "trading"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "dsip-tracker",
+      "name": "DSIP Tracker",
+      "owner": "Rahat",
+      "project": "DSIP-WD6B",
+      "category": "Project Control",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Project tracker (Vercel). Repo: rahatce98/dsip-tracker.",
+      "url": "https://dsip-tracker.vercel.app",
+      "tags": [
+        "github",
+        "vercel"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "construction-planner",
+      "name": "Construction Planner Pro",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Project Control",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Construction planning web app on GitHub Pages.",
+      "url": "https://rahatce98.github.io/Construction-Planner-pro/",
+      "tags": [
+        "github",
+        "pages",
+        "planning"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gh-batch-print-word-file",
+      "name": "Batch Print Word File",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Repository",
+      "kind": "Repository",
+      "status": "live",
+      "description": "Batch-print Word files.",
+      "url": "https://github.com/rahatce98/Batch-Print-Word-File-",
+      "tags": [
+        "github"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gh-auto-print-without-killing-pdf-reader",
+      "name": "Auto Print Without Killing PDF reader",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Repository",
+      "kind": "Repository",
+      "status": "live",
+      "description": "Auto-print PDFs without closing the reader.",
+      "url": "https://github.com/rahatce98/Auto-Print-Without-Killing-PDF-reader",
+      "tags": [
+        "github"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gh-cad",
+      "name": "CAD",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Repository",
+      "kind": "Repository",
+      "status": "live",
+      "description": "CAD scripts and utilities.",
+      "url": "https://github.com/rahatce98/CAD",
+      "tags": [
+        "github"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gh-arcgis",
+      "name": "Arcgis",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Repository",
+      "kind": "Repository",
+      "status": "live",
+      "description": "ArcGIS scripts.",
+      "url": "https://github.com/rahatce98/Arcgis",
+      "tags": [
+        "github"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gh-kobotoolbox",
+      "name": "Kobotoolbox",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Repository",
+      "kind": "Repository",
+      "status": "live",
+      "description": "KoboToolbox forms and tooling.",
+      "url": "https://github.com/rahatce98/Kobotoolbox",
+      "tags": [
+        "github"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gh-indicator",
+      "name": "Indicator",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Repository",
+      "kind": "Repository",
+      "status": "live",
+      "description": "Trading indicator code.",
+      "url": "https://github.com/rahatce98/Indicator",
+      "tags": [
+        "github"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gh-code",
+      "name": "Code",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Repository",
+      "kind": "Repository",
+      "status": "live",
+      "description": "Code stack — snippets.",
+      "url": "https://github.com/rahatce98/Code",
+      "tags": [
+        "github"
+      ],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "gh-course",
+      "name": "Course",
+      "owner": "Rahat",
+      "project": "Code",
+      "category": "Repository",
+      "kind": "Repository",
+      "status": "live",
+      "description": "Course material.",
+      "url": "https://github.com/rahatce98/Course",
+      "tags": [
+        "github"
+      ],
       "added": "2026-09-22"
     }
   ]

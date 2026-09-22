@@ -16,7 +16,42 @@
  * POST {a:'restore', pin, id}
  * POST {a:'trash', pin}            -> deleted records
  * POST {a:'setpin', pin, next}
+ *
+ * Visibility: every record has `visibility` 'public' | 'private'. GET returns
+ * public records only, plus `hidden` — ids the owner has made private, so the
+ * site can also hide a matching baseline entry. Private records come back only
+ * through POST {a:'all', pin}.
+ *
+ * Forgot the PIN? Open this project in the Apps Script editor (signed in as the
+ * owner Google account) and run resetPin(). The next unlock on the site asks
+ * for a new PIN. That keeps recovery tied to the Google login, with nothing
+ * secret stored here.
  */
+
+function resetPin() {
+  P.deleteProperty('pin');
+  Logger.log('PIN cleared. Open the portfolio, press the lock, and choose a new PIN.');
+}
+
+/** Internal work portals — seeded once as private (URLs only, never passwords). */
+var SEED = [
+  { id: 'rfl-hris', name: 'RFL HRIS', project: 'RFL', category: 'Work Portal', kind: 'Portal', url: 'http://hris.prangroup.com:8686/Login.aspx?returnUrl=~/Pages/Admin/Default.aspx', description: 'PRAN-RFL HR information system.', tags: ['rfl', 'hr'] },
+  { id: 'rfl-hris-admin', name: 'RFL HRIS Admin', project: 'RFL', category: 'Work Portal', kind: 'Portal', url: 'https://hris.prangroup.com:8685/Login.aspx?returnUrl=~/Pages/Admin/Default.aspx', description: 'HRIS admin login.', tags: ['rfl', 'hr', 'admin'] },
+  { id: 'rfl-hire360', name: 'RFL Hire360', project: 'RFL', category: 'Work Portal', kind: 'Portal', url: 'https://hire360.prangroup.com/candidate/dashboard', description: 'Hire360 candidate dashboard.', tags: ['rfl', 'hr'] },
+  { id: 'rfl-ontrack', name: 'RFL OnTrack', project: 'RFL', category: 'Work Portal', kind: 'Portal', url: 'https://ontrack.prangroup.com/ords/r/rpro/ontrack/login', description: 'OnTrack (Oracle APEX).', tags: ['rfl', 'ontrack'] },
+  { id: 'gh-websitedevelopement', name: 'Website Development', project: 'Code', category: 'Repository', kind: 'Web App', url: 'https://gorgeous-sorbet-a5f643.netlify.app/', description: 'Private repo rahatce98/WebsiteDevelopement (Netlify).', tags: ['github', 'netlify'] },
+  { id: 'gh-v0-portfolio', name: 'v0 Portfolio', project: 'Code', category: 'Repository', kind: 'Repository', url: 'https://github.com/rahatce98/v0-portfolio-website', description: 'Private repo.', tags: ['github', 'v0'] }
+];
+
+function seed_() {
+  if (P.getProperty('seeded_v2')) return;
+  SEED.forEach(function (t) {
+    if (P.getProperty('t_' + t.id)) return;
+    var r = clean_(Object.assign({ owner: 'Rahat', status: 'private', visibility: 'private' }, t));
+    P.setProperty('t_' + r.id, JSON.stringify(r));
+  });
+  P.setProperty('seeded_v2', '1');
+}
 
 var P = PropertiesService.getScriptProperties();
 
@@ -62,13 +97,20 @@ function clean_(t) {
     category: s(t.category, 60), kind: s(t.kind, 60), status: s(t.status, 20) || 'live',
     description: s(t.description, 600), url: s(t.url, 800), short: s(t.short, 300),
     tags: (Array.isArray(t.tags) ? t.tags : []).slice(0, 12).map(function (x) { return s(x, 40); }),
-    meta: meta, added: s(t.added, 10) || Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yyyy-MM-dd'),
+    meta: meta, visibility: t.visibility === 'private' ? 'private' : 'public', added: s(t.added, 10) || Utilities.formatDate(new Date(), 'Asia/Dhaka', 'yyyy-MM-dd'),
     updated: new Date().toISOString(), deleted: false
   };
 }
 
 function doGet(e) {
-  return out_({ ok: true, tools: all_().filter(function (t) { return !t.deleted; }), hasPin: !!P.getProperty('pin') });
+  seed_();
+  var list = all_();
+  return out_({
+    ok: true,
+    tools: list.filter(function (t) { return !t.deleted && t.visibility !== 'private'; }),
+    hidden: list.filter(function (t) { return t.deleted || t.visibility === 'private'; }).map(function (t) { return t.id; }),
+    hasPin: !!P.getProperty('pin')
+  });
 }
 
 function doPost(e) {

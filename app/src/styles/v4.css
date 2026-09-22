@@ -431,3 +431,10 @@ body[data-theater] .progress { top: 58px; }
   .jv__rings g, .orb__core, .orb__ring, .lart__g1, .lart__g2, .lart__flame, .lart__water, .lart__arrow, .lart__bmd { animation: none !important; }
   .tool[data-view='grid']:hover { transform: none; }
 }
+
+.tool__priv { margin-left: 8px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--accent-2); color: var(--accent-2); }
+.tool__admin .tbtn[data-on='false'] { color: var(--accent-2); border-color: var(--accent-2); }
+.addlg__forgot { grid-column: 1 / -1; font-size: 0.84rem; color: var(--ink-2); }
+.addlg__forgot summary { cursor: pointer; color: var(--ink-3); }
+.addlg__forgot p { margin: 8px 0 0; line-height: 1.55; }
+.addlg__forgot a { color: var(--accent); }
