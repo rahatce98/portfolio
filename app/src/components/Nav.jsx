@@ -30,6 +30,11 @@ export default function Nav() {
     };
   }, [open]);
 
+  useEffect(() => {
+    window.addEventListener('rh-theme', toggleTheme);
+    return () => window.removeEventListener('rh-theme', toggleTheme);
+  }, [toggleTheme]);
+
   const go = (e, id) => {
     e.preventDefault();
     setOpen(false);
@@ -45,7 +50,10 @@ export default function Nav() {
       <header className="nav" data-stuck={stuck}>
         <div className="nav__inner">
           <a className="brand" href="#home" onClick={(e) => go(e, 'home')}>
-            <span className="brand__mark">{person.monogram}</span>
+            <span className="brand__mark brand__mark--photo">
+              <img src={`${import.meta.env.BASE_URL}${person.photo}`} alt="" width="40" height="40" />
+              <i aria-hidden="true" />
+            </span>
             <span className="brand__text">
               <span className="brand__name">{person.name}</span>
               <span className="brand__sub">{person.eyebrow}</span>

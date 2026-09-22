@@ -16,7 +16,7 @@ export default function Contact() {
         <div className="contact">
           <div>
             <span className="section-head__index" data-reveal>
-              06 — Contact
+              07 — Contact
             </span>
             <h2 data-reveal>
               Let&rsquo;s build something

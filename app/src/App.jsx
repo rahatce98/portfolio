@@ -9,6 +9,9 @@ import Contact from './sections/Contact';
 import Tools from './sections/Tools';
 import Lab from './sections/Lab';
 import CommandPalette from './components/CommandPalette';
+import Jarvis from './sections/Jarvis';
+import Shortcuts from './components/Shortcuts';
+import ToastHost from './components/Toast';
 import { person, seo, socials } from './data/site';
 import { hasWebGL } from './hooks/useEnv';
 import { useScrollTo } from './hooks/useScroll';
@@ -86,7 +89,7 @@ export default function App() {
       <main id="main">
         <Hero onSceneReady={onSceneReady} />
         <Explore />
-
+        <Jarvis />
         <Tools />
         <Projects />
         <Technology />
@@ -109,14 +112,16 @@ export default function App() {
               </span>
             ))}
           </p>
-          <p>
-            <a href={seo.canonical}>{seo.canonical.replace(/^https:\/\//, '')}</a>
+          <p className="mono">
+            Built by hand · <kbd>?</kbd> for keys
           </p>
         </div>
       </footer>
 
       <BackToTop />
       <CommandPalette />
+      <Shortcuts />
+      <ToastHost />
     </>
   );
 }

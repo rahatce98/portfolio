@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { sections } from '../data/site';
 import { useTools, score, hostOf, hueOf, trackOpen } from '../sections/Tools';
 import { useScrollTo } from '../hooks/useScroll';
+import { LABS } from '../sections/Lab';
 
 /* Ctrl/⌘ K — jump to any tool or section from anywhere on the page. */
 
@@ -58,7 +59,10 @@ export default function CommandPalette() {
     const a = !q || 'add tool new link'.includes(q.toLowerCase())
       ? [{ type: 'action', id: 'add', label: 'Add a tool…', sub: 'New index entry', run: () => { scrollTo('tools'); setTimeout(() => window.dispatchEvent(new Event('rh-add-tool')), 350); } }]
       : [];
-    return [...t, ...a, ...s];
+    const l = LABS.filter((x) => !q || (x.label + ' lab ' + x.id).toLowerCase().includes(q.toLowerCase())).map((x) => ({
+      type: 'lab', id: x.id, label: x.label, sub: `${x.code} · ${x.group}`, run: () => window.dispatchEvent(new CustomEvent('rh-lab', { detail: x.id })),
+    }));
+    return [...t, ...a, ...l, ...s];
   }, [tools, q, scrollTo]);
 
   useEffect(() => setI(0), [q]);

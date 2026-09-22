@@ -3,7 +3,7 @@ import { projects, projectCategories, experience } from '../data/site';
 import { useReveal } from '../hooks/useScroll';
 import ProjectCard from '../components/ProjectCard';
 
-/* 03 — Projects: the filterable grid, then the professional record that the
+/* 04 — Projects: the filterable grid, then the professional record that the
    grid draws on. Filters derive from projectCategories in data/site.js, so a
    new category appears here automatically. */
 

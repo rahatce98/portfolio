@@ -291,9 +291,10 @@ export const seo = {
 export const sections = [
   { id: 'home', index: '00', label: 'Home' },
   { id: 'explore', index: '01', label: 'About' },
-  { id: 'tools', index: '02', label: 'Tools' },
-  { id: 'projects', index: '03', label: 'Projects' },
-  { id: 'technology', index: '04', label: 'Learning' },
-  { id: 'lab', index: '05', label: 'Lab' },
-  { id: 'contact', index: '06', label: 'Contact' },
+  { id: 'jarvis', index: '02', label: 'Jarvis' },
+  { id: 'tools', index: '03', label: 'Tools' },
+  { id: 'projects', index: '04', label: 'Projects' },
+  { id: 'technology', index: '05', label: 'Learning' },
+  { id: 'lab', index: '06', label: 'Lab' },
+  { id: 'contact', index: '07', label: 'Contact' },
 ];

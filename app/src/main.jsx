@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles/global.css';
 import './styles/v3.css';
+import './styles/v4.css';
 
 // Let the page own its scroll position rather than the browser restoring one
 // before the tall scroll tracks have laid out.
