@@ -1,0 +1,83 @@
+/* Command-center bento */
+.bgrid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 150px;
+  gap: 14px;
+}
+.bt {
+  all: unset; box-sizing: border-box; position: relative; overflow: hidden; isolation: isolate;
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 4px;
+  padding: 22px; border-radius: 26px; cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--card);
+  transition: transform 0.55s var(--spring), border-color 0.3s, box-shadow 0.55s var(--spring);
+}
+.bt::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(380px circle at var(--mx, 70%) var(--my, 20%), rgba(255, 255, 255, 0.08), transparent 55%);
+  opacity: 0; transition: opacity 0.4s;
+}
+.bt:hover { transform: translateY(-4px) scale(1.006); border-color: var(--line-2); box-shadow: 0 40px 80px -50px rgba(0, 0, 0, 0.9); }
+.bt:hover::before { opacity: 1; }
+.bt:active { transform: scale(0.985); transition-duration: 0.12s; }
+.bt:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.bt__k { color: var(--ink-3); font-size: 0.6rem; }
+.bt__t { font-size: 1.3rem; font-weight: 600; letter-spacing: -0.03em; line-height: 1.15; }
+.bt__sub { font-size: 0.84rem; color: var(--ink-3); }
+
+.bt--tools { grid-column: span 7; grid-row: span 2; background: radial-gradient(700px 400px at 100% 0%, rgba(86, 220, 255, 0.16), transparent 60%), var(--card); }
+.bt__big { font: 500 clamp(4.5rem, 9vw, 7.5rem)/0.9 var(--mono); letter-spacing: -0.07em; color: var(--ink); }
+.bt--tools .bt__t { font-size: 1.6rem; }
+.bt__marquee { position: absolute; top: 22px; left: 0; right: 0; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.bt__marquee > span { display: inline-flex; gap: 10px; white-space: nowrap; animation: marquee 40s linear infinite; }
+.bt__marquee em { font-style: normal; padding: 6px 12px; border: 1px solid var(--line); border-radius: 99px; font-size: 0.78rem; color: var(--ink-2); background: var(--panel); }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+.bt--jarvis { grid-column: span 5; grid-row: span 2; background: radial-gradient(420px 320px at 50% 40%, rgba(86, 220, 255, 0.2), transparent 70%), #04070d; }
+:root[data-theme='light'] .bt--jarvis { background: radial-gradient(420px 320px at 50% 40%, rgba(10, 126, 164, 0.18), transparent 70%), #eef3fa; }
+.bt__cube { position: absolute; inset: 0 0 60px; width: 100%; height: calc(100% - 60px); }
+
+.bt--vault { grid-column: span 4; grid-row: span 2; background: radial-gradient(360px 280px at 50% 30%, rgba(124, 140, 255, 0.22), transparent 70%), var(--card); }
+.bt__lock { position: absolute; top: 28px; left: 50%; width: 96px; height: 96px; transform: translateX(-50%); }
+.bt__lock svg { width: 100%; height: 100%; fill: none; stroke: var(--accent-2); stroke-width: 2.4; stroke-linecap: round; filter: drop-shadow(0 0 16px rgba(124, 140, 255, 0.55)); }
+.bt__shackle { transition: transform 0.6s var(--spring); transform-origin: 42px 28px; }
+.bt--vault:hover .bt__shackle { transform: translateY(-5px) rotate(-18deg); }
+
+.bt--engine { grid-column: span 8; grid-row: span 2; background: radial-gradient(600px 380px at 85% 50%, rgba(255, 138, 58, 0.22), transparent 65%), #07080c; }
+:root[data-theme='light'] .bt--engine { background: radial-gradient(600px 380px at 85% 50%, rgba(255, 138, 58, 0.2), transparent 65%), #f4f1ee; }
+.bt__fan { position: absolute; right: -40px; top: 50%; width: 340px; height: 340px; transform: translateY(-50%); fill: rgba(220, 228, 238, 0.12); stroke: rgba(220, 228, 238, 0.55); stroke-width: 0.6; animation: spin 14s linear infinite; }
+.bt--engine:hover .bt__fan { animation-duration: 1.4s; }
+.bt--engine .bt__t { font-size: 2.2rem; }
+.bt__play { position: absolute; top: 22px; right: 22px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 0.9rem; transition: transform 0.4s var(--spring); }
+.bt--engine:hover .bt__play { transform: scale(1.12); }
+
+.bt--pipe, .bt--beam { grid-column: span 4; }
+.bt__pipe { position: absolute; top: 14px; right: 16px; width: 76px; fill: none; stroke: var(--ink-3); stroke-width: 2; }
+.bt__water { fill: rgba(86, 220, 255, 0.35); stroke: var(--accent); animation: slosh 2.4s ease-in-out infinite; }
+.bt__bm { position: absolute; top: 20px; right: 16px; width: 120px; fill: none; stroke: var(--ink-3); stroke-width: 2; }
+.bt__curve { stroke: var(--accent-2); stroke-dasharray: 140; stroke-dashoffset: 140; animation: draw 2.6s var(--ease) infinite; }
+.bt--3d { grid-column: span 4; background: radial-gradient(300px 200px at 100% 0%, rgba(86, 220, 255, 0.12), transparent 70%), var(--card); }
+.bt--social { grid-column: span 8; cursor: default; justify-content: space-between; flex-direction: row; align-items: center; }
+.bt--social:hover { transform: none; }
+.bt__icons { display: flex; gap: 8px; flex-wrap: wrap; }
+.bt__icons a { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px; border: 1px solid var(--line); color: var(--ink-2); background: var(--panel); transition: all 0.3s var(--spring); }
+.bt__icons a:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-3px); }
+.bt__icons svg { width: 18px; height: 18px; }
+
+@media (max-width: 1000px) {
+  .bgrid { grid-template-columns: repeat(6, 1fr); grid-auto-rows: 140px; }
+  .bt--tools, .bt--jarvis, .bt--engine, .bt--social { grid-column: span 6; }
+  .bt--vault { grid-column: span 6; }
+  .bt--pipe, .bt--beam, .bt--3d { grid-column: span 3; }
+}
+@media (max-width: 560px) {
+  .bgrid { grid-template-columns: 1fr 1fr; grid-auto-rows: 130px; gap: 10px; }
+  .bt { padding: 16px; border-radius: 20px; }
+  .bt--tools, .bt--jarvis, .bt--engine, .bt--vault, .bt--social, .bt--3d { grid-column: span 2; }
+  .bt--pipe, .bt--beam { grid-column: span 1; }
+  .bt__pipe, .bt__bm { display: none; }
+  .bt--social { flex-direction: column; align-items: flex-start; grid-row: span 1; }
+  .bt__fan { width: 240px; height: 240px; right: -60px; opacity: 0.6; }
+}
+@media (prefers-reduced-motion: reduce) { .bt__marquee > span, .bt__fan, .bt__water, .bt__curve { animation: none; } }

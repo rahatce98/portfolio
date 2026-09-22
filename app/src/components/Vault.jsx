@@ -175,6 +175,9 @@ export default function Vault() {
     setBusy(true);
     setErr('');
     try {
+      // First visit ever: no PIN on the server yet — this PIN becomes it.
+      const info = await fetch(`${API}?a=list&t=${Date.now()}`).then((r) => r.json()).catch(() => ({ hasPin: true }));
+      if (info.hasPin === false) await call({ a: 'setup', pin: p });
       const j = await call({ a: 'vaultGet', pin: p });
       blobRef.current = j.blob || '';
       revRef.current = j.rev || 0;
@@ -344,7 +347,7 @@ export default function Vault() {
         {stage === 'pin' && (
           <form className="vault__gate" onSubmit={(e) => { e.preventDefault(); load(pin); }}>
             <h3>Owner PIN</h3>
-            <p>Same PIN as the tool index. It only unlocks the encrypted file — your secrets still need the master password.</p>
+            <p>Same PIN as the tool index (first time: the PIN you type here is created). It only unlocks the encrypted file — your secrets still need the master password.</p>
             <input type="password" autoFocus value={pin} onChange={(e) => setPin(e.target.value)} placeholder="PIN" autoComplete="current-password" />
             {err && <p className="addlg__err">{err}</p>}
             <button type="submit" className="tbtn tbtn--go" disabled={busy || pin.length < 4}>{busy ? 'Checking…' : 'Continue'}</button>

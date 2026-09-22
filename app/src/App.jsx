@@ -10,6 +10,7 @@ import Tools from './sections/Tools';
 import Lab from './sections/Lab';
 import CommandPalette from './components/CommandPalette';
 import Jarvis from './sections/Jarvis';
+import Bento from './sections/Bento';
 import Shortcuts from './components/Shortcuts';
 import ToastHost from './components/Toast';
 import Vault from './components/Vault';
@@ -89,6 +90,7 @@ export default function App() {
 
       <main id="main">
         <Hero onSceneReady={onSceneReady} />
+        <Bento />
         <Explore />
         <Jarvis />
         <Tools />

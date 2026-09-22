@@ -7,7 +7,7 @@ import Stage from '../three/Stage';
 import { perfTier } from '../hooks/useEnv';
 
 /* -----------------------------------------------------------------------------
- * LAB-06 — Turbofan: a cinematic, scroll-scrubbed product film.
+ * LAB-00 — Turbofan: a cinematic, scroll-scrubbed product film.
  *
  * One continuous timeline p ∈ [0,1], damped toward the scroll position so the
  * scrub has weight (the GSAP "scrub: 1" feel). Every visual is a function of
@@ -307,16 +307,16 @@ function Airflow({ pRef, thrustRef, n = 1800 }) {
 
 // [p, position, lookAt] — interpolated with smoothstep between keys
 const SHOTS = [
-  [0.0, [3.6, 1.6, 5.6], [0, 0, 0]],
-  [0.14, [2.2, 1.0, 4.6], [-0.6, 0, 0]],
-  [0.32, [0.4, 0.9, 4.2], [0.6, 0, 0]],
-  [0.5, [0.2, 3.2, 8.6], [0, 0, 0]],
+  [0.0, [5.22, 2.32, 8.12], [0, 0, 0]],
+  [0.14, [3.19, 1.45, 6.67], [-0.6, 0, 0]],
+  [0.32, [0.58, 1.30, 6.09], [0.6, 0, 0]],
+  [0.5, [0.29, 4.64, 12.47], [0, 0, 0]],
   [0.58, [-5.2, 0.2, 0.9], [-2.2, 0, 0]],
   [0.66, [-1.6, 0.05, 0.12], [2, 0, 0]],
   [0.72, [2.6, 0.3, 0.4], [5, 0, 0]],
-  [0.8, [4.6, 1.8, 4.6], [0, 0, 0]],
-  [0.9, [5.4, 1.0, 3.4], [0.4, 0, 0]],
-  [1.0, [-4.8, 1.2, 4.2], [0.2, 0, 0]],
+  [0.8, [6.67, 2.61, 6.67], [0, 0, 0]],
+  [0.9, [7.83, 1.45, 4.93], [0.4, 0, 0]],
+  [1.0, [-6.96, 1.74, 6.09], [0.2, 0, 0]],
 ];
 const v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), l1 = new THREE.Vector3(), l2 = new THREE.Vector3();
 
@@ -352,7 +352,7 @@ function Post() {
   return (
     <EffectComposer multisampling={0}>
       <DepthOfField target={target} focalLength={0.08} bokehScale={2.2} />
-      <Bloom intensity={0.9} luminanceThreshold={0.62} luminanceSmoothing={0.2} mipmapBlur />
+      <Bloom intensity={0.45} luminanceThreshold={0.86} luminanceSmoothing={0.2} mipmapBlur />
       <ChromaticAberration offset={[0.0006, 0.0008]} blendFunction={BlendFunction.NORMAL} />
       <Vignette eskil={false} offset={0.2} darkness={0.75} />
     </EffectComposer>
@@ -384,8 +384,12 @@ export default function EngineLab() {
       const r = el.getBoundingClientRect();
       target.current = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
     };
-    const loop = () => {
-      pRef.current += (target.current - pRef.current) * 0.08;
+    let last = performance.now();
+    const loop = (now) => {
+      // frame-rate independent damping (~0.35 s to settle), like a GSAP scrub
+      const dt = Math.min(0.1, ((now || performance.now()) - last) / 1000);
+      last = now || performance.now();
+      pRef.current += (target.current - pRef.current) * (1 - Math.exp(-dt * 7));
       const p = pRef.current;
       let c = 0;
       CHAPTERS.forEach((x, i) => p >= x.at - 0.001 && (c = i));
@@ -437,7 +441,7 @@ export default function EngineLab() {
         <div className="engine__sticky" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
           <Stage
             active
-            camera={{ position: [3.6, 1.6, 5.6], fov: 38, near: 0.05, far: 60 }}
+            camera={{ position: [5.2, 2.3, 8.1], fov: 38, near: 0.05, far: 60 }}
             className="engine__canvas"
             onCreated={({ gl, scene }) => {
               gl.localClippingEnabled = true;
@@ -454,7 +458,7 @@ export default function EngineLab() {
           </Stage>
 
           <div className="engine__hud engine__hud--tl">
-            <span className="mono">LAB-06 · Turbofan</span>
+            <span className="mono">LAB-00 · Turbofan</span>
             <h3 key={c.t}>{c.t}</h3>
             <p key={c.d}>{c.d}</p>
           </div>
