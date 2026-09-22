@@ -290,11 +290,10 @@ export const seo = {
 /** Section registry — drives the nav, the scroll-spy and the section order. */
 export const sections = [
   { id: 'home', index: '00', label: 'Home' },
-  { id: 'explore', index: '01', label: 'Explore' },
-  { id: 'rocket-lab', index: '02', label: 'Rocket Lab' },
-  { id: 'automotive-lab', index: '03', label: 'Automotive' },
-  { id: 'systems', index: '04', label: 'Systems' },
-  { id: 'technology', index: '05', label: 'Technology' },
-  { id: 'projects', index: '06', label: 'Projects' },
-  { id: 'contact', index: '07', label: 'Contact' },
+  { id: 'explore', index: '01', label: 'About' },
+  { id: 'tools', index: '02', label: 'Tools' },
+  { id: 'projects', index: '03', label: 'Projects' },
+  { id: 'technology', index: '04', label: 'Learning' },
+  { id: 'lab', index: '05', label: 'Lab' },
+  { id: 'contact', index: '06', label: 'Contact' },
 ];

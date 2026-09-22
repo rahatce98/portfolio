@@ -84,13 +84,13 @@ export default function Hero({ onSceneReady }) {
             <div className="hero__cta">
               <a
                 className="btn btn--primary"
-                href="#rocket-lab"
+                href="#tools"
                 onClick={(e) => {
                   e.preventDefault();
-                  scrollTo('rocket-lab');
+                  scrollTo('tools');
                 }}
               >
-                Enter the labs <ArrowRight />
+                Open the tool index <ArrowRight />
               </a>
               {webgl && (
                 <button className="btn btn--ghost" type="button" onClick={toggleIgnition}>

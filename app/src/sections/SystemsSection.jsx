@@ -10,7 +10,7 @@ import { perfTier } from '../hooks/useEnv';
 import { Reset, Plus, Minus, Expand, Shrink, Rotate } from '../components/Icons';
 
 /* -----------------------------------------------------------------------------
- * 04 — Engineering Systems
+ * LAB-03 — Mechanisms
  *
  * Three mechanical primitives, each simulated rather than illustrated: a real
  * gear ratio, a truss whose members change colour with the sign of their axial

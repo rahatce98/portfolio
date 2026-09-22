@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Nav from './components/Nav';
 import Loader from './components/Loader';
 import Hero from './sections/Hero';
@@ -6,6 +6,9 @@ import Explore from './sections/Explore';
 import Technology from './sections/Technology';
 import Projects from './sections/Projects';
 import Contact from './sections/Contact';
+import Tools from './sections/Tools';
+import Lab from './sections/Lab';
+import CommandPalette from './components/CommandPalette';
 import { person, seo, socials } from './data/site';
 import { hasWebGL } from './hooks/useEnv';
 import { useScrollTo } from './hooks/useScroll';
@@ -19,28 +22,6 @@ import { ArrowUp } from './components/Icons';
  * approaches rather than at boot. Each placeholder reserves the section's
  * height so the page never shifts under the reader when a chunk lands.
  * -------------------------------------------------------------------------- */
-
-const RocketLab = lazy(() => import('./sections/RocketLab'));
-const AutoLab = lazy(() => import('./sections/AutoLab'));
-const SystemsSection = lazy(() => import('./sections/SystemsSection'));
-
-function SectionSkeleton({ id, index, title, minHeight = '70vh' }) {
-  return (
-    <section className="section" id={id} style={{ minHeight }}>
-      <div className="wrap">
-        <div className="section-head">
-          <div>
-            <span className="section-head__index">{index}</span>
-            <h2>{title}</h2>
-          </div>
-        </div>
-        <div className="stage__fallback">
-          <span className="mono">Loading scene…</span>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function BackToTop() {
   const [show, setShow] = useState(false);
@@ -106,20 +87,10 @@ export default function App() {
         <Hero onSceneReady={onSceneReady} />
         <Explore />
 
-        <Suspense fallback={<SectionSkeleton id="rocket-lab" index="02 — Rocket Lab" title="Take the vehicle apart." minHeight="80vh" />}>
-          <RocketLab />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton id="automotive-lab" index="03 — Automotive Lab" title="Nine assemblies, one vehicle." />}>
-          <AutoLab />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton id="systems" index="04 — Engineering Systems" title="Mechanisms, running." minHeight="60vh" />}>
-          <SystemsSection />
-        </Suspense>
-
-        <Technology />
+        <Tools />
         <Projects />
+        <Technology />
+        <Lab />
         <Contact />
       </main>
 
@@ -145,6 +116,7 @@ export default function App() {
       </footer>
 
       <BackToTop />
+      <CommandPalette />
     </>
   );
 }

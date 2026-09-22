@@ -68,6 +68,16 @@ export default function Nav() {
 
           <div className="nav__actions">
             <button
+              className="kbtn"
+              type="button"
+              onClick={() => window.dispatchEvent(new Event('rh-palette'))}
+              aria-label="Search tools (Ctrl K)"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+              <span>Search</span>
+              <kbd>Ctrl K</kbd>
+            </button>
+            <button
               className="icon-btn"
               type="button"
               onClick={toggleTheme}

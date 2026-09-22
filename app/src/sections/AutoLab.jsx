@@ -15,7 +15,7 @@ import { perfTier } from '../hooks/useEnv';
 import { Tag, Reset, Plus, Minus, Explode, Assemble, Expand, Shrink, Bulb, Rotate, Camera } from '../components/Icons';
 
 /* -----------------------------------------------------------------------------
- * 03 — Automotive Lab
+ * LAB-02 — Automotive
  *
  * A configurator rather than a scroll sequence: the user drives every state.
  * Explode is a continuous value, not a two-state toggle, so a part can be

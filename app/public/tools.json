@@ -1,0 +1,118 @@
+{
+  "_readme": "Tool index for rahatce98.github.io/portfolio. Add an object to `tools` and commit — the live site reads this file straight from GitHub, so no rebuild is needed. Fields: id, name, owner, project, category, kind, status, description, url, short?, tags[], meta{}? , added (YYYY-MM-DD).",
+  "tools": [
+    {
+      "id": "cd-studio",
+      "name": "CD Studio",
+      "owner": "Rahat",
+      "project": "Personal",
+      "category": "Studio",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Apps Script studio web app — creative / document workspace.",
+      "url": "https://script.google.com/macros/s/AKfycbzkywik8W5OnA5VB5PMCX_GYU_MViOLtj5R8YFhz_YxN8SeesE7RPTKFVmJc4MVp_t1kA/exec",
+      "short": "https://tinyurl.com/CD-Studio",
+      "tags": ["apps-script", "studio"],
+      "meta": {
+        "Script ID": "1TCXg3y4Uh-qfZt2KQPGcDCP24FT_BNpJV5sRTSPP0Bxio4ygnjVzfEMq",
+        "Deployment": "AKfycbzkywik8W5OnA5VB5PMCX_GYU_MViOLtj5R8YFhz_YxN8SeesE7RPTKFVmJc4MVp_t1kA"
+      },
+      "added": "2026-09-22"
+    },
+    {
+      "id": "dsip-letters",
+      "name": "Correspondence Tracking Portal",
+      "owner": "DSIP-WD6B",
+      "project": "DSIP-WD6B",
+      "category": "Project Control",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Letter register across RFL, DOWHA, DWASA, DNCC and DSCC — reply chains, who-must-reply, duplicates and attachment sync.",
+      "url": "https://script.google.com/macros/s/AKfycbw7cDKpJCSXILLHXnUCR-1-xxATx58S7umMLHJCig92NDYYpat8vEYM7tyfJpBdteGpuA/exec",
+      "tags": ["letters", "register", "apps-script"],
+      "meta": {
+        "Script ID": "18j3_w3ovth-1WvWAlREt8_04hMKSiZobxgtgOW3J_ze-R-Q-f09yQzzQ",
+        "Deployment": "AKfycbw7cDKpJCSXILLHXnUCR-1-xxATx58S7umMLHJCig92NDYYpat8vEYM7tyfJpBdteGpuA"
+      },
+      "added": "2026-09-22"
+    },
+    {
+      "id": "dsip-rfi",
+      "name": "RFI Survey & Generator",
+      "owner": "DSIP-WD6B",
+      "project": "DSIP-WD6B",
+      "category": "Field Data",
+      "kind": "Form + Dashboard",
+      "status": "live",
+      "description": "Request-for-Inspection field form (pipe, manhole, IP, HC, leakage, CCTV), live dashboard and PDF / Excel RFI generator.",
+      "url": "https://script.google.com/macros/s/AKfycbyted_aNNVHDwCywZAEuIPtkuA7lW3AFaDG6K2oepm_nH0Js00dvOYNFkcBujtfSpDj/exec",
+      "tags": ["rfi", "survey", "inspection", "apps-script"],
+      "meta": {
+        "Script ID": "1A0VBLx8crZ5zjgYy9FFRcbx29KlGvgo1QOKPL54HeZkTfmUu9dzT5TO4",
+        "Deployment": "AKfycbyted_aNNVHDwCywZAEuIPtkuA7lW3AFaDG6K2oepm_nH0Js00dvOYNFkcBujtfSpDj",
+        "Dashboard": "https://script.google.com/macros/s/AKfycbyted_aNNVHDwCywZAEuIPtkuA7lW3AFaDG6K2oepm_nH0Js00dvOYNFkcBujtfSpDj/exec?page=dashboard"
+      },
+      "added": "2026-09-22"
+    },
+    {
+      "id": "wd6b-site-report",
+      "name": "WD6B Site Report",
+      "owner": "DSIP-WD6B",
+      "project": "DSIP-WD6B",
+      "category": "Project Control",
+      "kind": "Web App",
+      "status": "live",
+      "description": "Daily programme vs progress entry and register for the sewer network package, by phase, segment and road.",
+      "url": "https://script.google.com/macros/s/AKfycbx_Aj8vyxGF6YvBd3nqY_ywc_zAmt46O9mh1V32P4_sXSvYzfxRrBBQw3-0FUQDGkXJ/exec",
+      "tags": ["progress", "programme", "daily report", "apps-script"],
+      "meta": {
+        "Script ID": "18k2YG0-cUClvo8BUZd6QCSaLvSBnizFh6bqGjE4o4ZjShT3HwQdaLrK4",
+        "Deployment": "AKfycbx_Aj8vyxGF6YvBd3nqY_ywc_zAmt46O9mh1V32P4_sXSvYzfxRrBBQw3-0FUQDGkXJ"
+      },
+      "added": "2026-09-22"
+    },
+    {
+      "id": "apps-script-5",
+      "name": "Private Web App",
+      "owner": "Rahat",
+      "project": "Personal",
+      "category": "Utility",
+      "kind": "Web App",
+      "status": "private",
+      "description": "Google-account protected Apps Script web app. Sign-in required.",
+      "url": "https://script.google.com/macros/s/AKfycbwNBCXB2fFvMTZKM3gxUL-y1SDU0IGvFwtaCgilc-rYA44h1raEaBqKWEpSp51nZj8WdQ/exec",
+      "tags": ["apps-script", "private"],
+      "meta": {
+        "Script ID": "1T75mq_rQj3a-HN-769e7Lzy0_XcUgB-jN5rS9ZJBw4irUoJCUqMrKWh2",
+        "Deployment": "AKfycbwNBCXB2fFvMTZKM3gxUL-y1SDU0IGvFwtaCgilc-rYA44h1raEaBqKWEpSp51nZj8WdQ"
+      },
+      "added": "2026-09-22"
+    },
+    {
+      "id": "apps-script-home",
+      "name": "Apps Script Console",
+      "owner": "Google",
+      "project": "Workspace",
+      "category": "Dev Console",
+      "kind": "Console",
+      "status": "live",
+      "description": "All script projects — editor, deployments, executions and triggers.",
+      "url": "https://script.google.com/home",
+      "tags": ["apps-script", "console", "deploy"],
+      "added": "2026-09-22"
+    },
+    {
+      "id": "portfolio-repo",
+      "name": "Portfolio Source",
+      "owner": "Rahat",
+      "project": "Personal",
+      "category": "Dev Console",
+      "kind": "Repository",
+      "status": "live",
+      "description": "Source of this site. Edit app/public/tools.json here to add links.",
+      "url": "https://github.com/rahatce98/portfolio",
+      "tags": ["github", "source"],
+      "added": "2026-09-22"
+    }
+  ]
+}

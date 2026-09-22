@@ -15,7 +15,7 @@ import { perfTier } from '../hooks/useEnv';
 import { Tag, Reset, Plus, Minus, Explode, Assemble, Expand, Shrink, Bulb, Rotate } from '../components/Icons';
 
 /* -----------------------------------------------------------------------------
- * 02 — Rocket Lab
+ * LAB-01 — Launch Vehicle
  *
  * A tall scroll track runs behind a sticky viewer. Scroll position maps to the
  * disassembly sequence, and clicking a step scrolls the page to that step's

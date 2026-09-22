@@ -16,7 +16,7 @@ export default function Explore() {
       <div className="wrap">
         <div className="section-head" data-reveal>
           <div>
-            <span className="section-head__index">01 — Explore</span>
+            <span className="section-head__index">01 — About</span>
             <h2>Engineering, and the tools around it.</h2>
           </div>
           <p>{person.tagline}</p>

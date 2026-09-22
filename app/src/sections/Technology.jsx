@@ -2,7 +2,7 @@ import { lab, now, education } from '../data/site';
 import { useReveal } from '../hooks/useScroll';
 import { Bulb, Doc } from '../components/Icons';
 
-/* 05 — Technology: what is being learned, what is being worked on right now,
+/* 04 — Technology: what is being learned, what is being worked on right now,
    and the formal background behind both. */
 
 export default function Technology() {
