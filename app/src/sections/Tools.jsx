@@ -45,7 +45,7 @@ const store = {
 
 /* ---------------------------------------------------------------- data --- */
 
-async function post(body) {
+export async function post(body) {
   // text/plain keeps this a "simple" request — no CORS preflight, which Apps
   // Script cannot answer.
   const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
@@ -65,10 +65,14 @@ let loading = null;
 export function refreshTools() {
   const base = state.base
     ? Promise.resolve(state.base)
-    : fetch(`${import.meta.env.BASE_URL}tools.json`, { cache: 'no-cache' })
-        .then((r) => r.json())
-        .then((j) => j.tools || [])
-        .catch(() => []);
+    : Promise.all(
+        ['tools.json', 'bookmarks.json'].map((f) =>
+          fetch(`${import.meta.env.BASE_URL}${f}`, { cache: 'no-cache' })
+            .then((r) => r.json())
+            .then((j) => j.tools || [])
+            .catch(() => []),
+        ),
+      ).then((a) => a.flat());
   const remote = fetch(`${API}?a=list&t=${Date.now()}`)
     .then((r) => r.json())
     .then((j) => {
@@ -599,7 +603,7 @@ function EditDialog({ open, editing, onClose, categories, projects, pin }) {
         </label>
         <datalist id="dl-cat">{categories.map((c) => <option key={c} value={c} />)}</datalist>
         <datalist id="dl-proj">{projects.map((c) => <option key={c} value={c} />)}</datalist>
-        <datalist id="dl-kind">{['Web App', 'Form', 'Sheet', 'Dashboard', 'Doc', 'File', 'Repository', 'Console', 'Link'].map((c) => <option key={c} value={c} />)}</datalist>
+        <datalist id="dl-kind">{['Web App', 'Form', 'Sheet', 'Dashboard', 'Doc', 'File', 'Repository', 'Console', 'Bookmark', 'Link'].map((c) => <option key={c} value={c} />)}</datalist>
 
         {err && <p className="addlg__err">{err}</p>}
 
@@ -732,6 +736,8 @@ export default function Tools() {
     return tools
       .map((t) => ({ t, s: score(t, q.trim()) }))
       .filter(({ t, s }) => s > 0 && (cat === 'All' || t.category === cat) && (proj === 'All' || (t.project || t.owner) === proj))
+      // Bookmarks stay out of the default grid; search, a filter or the chip shows them.
+      .filter(({ t }) => t.kind !== 'Bookmark' || q.trim() || cat !== 'All' || proj !== 'All')
       .sort((a, b) => pinSet.has(b.t.id) - pinSet.has(a.t.id) || b.s - a.s || a.t.name.localeCompare(b.t.name))
       .map(({ t }) => t);
   }, [tools, q, cat, proj, pins]);

@@ -1,0 +1,1349 @@
+{
+ "_readme": "Public bookmarks. Jarvis adds more through the owner API.",
+ "tools": [
+  {
+   "id": "bm-perplexity",
+   "name": "Perplexity",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI answer engine with cited web search.",
+   "url": "https://www.perplexity.ai/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-lmarena-chatbot-arena",
+   "name": "LMArena (Chatbot Arena)",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Chat with and compare open and frontier LLMs side by side.",
+   "url": "https://lmarena.ai/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-consensus",
+   "name": "Consensus",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI search engine over peer-reviewed research.",
+   "url": "https://consensus.app/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-forefront-chat",
+   "name": "Forefront Chat",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Multi-model AI chat.",
+   "url": "https://chat.forefront.ai/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-writesonic",
+   "name": "Writesonic",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI writing and SEO content workspace.",
+   "url": "https://app.writesonic.com/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-bing",
+   "name": "Bing",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Bing search with Copilot.",
+   "url": "https://www.bing.com/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-prefind",
+   "name": "Prefind",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI search powered by frontier models.",
+   "url": "https://www.prefind.ai/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-blackbox-ai",
+   "name": "Blackbox AI",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI code generation, code chat and code search.",
+   "url": "https://www.blackbox.ai/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-chatpdf",
+   "name": "ChatPDF",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Chat with any PDF.",
+   "url": "https://www.chatpdf.com/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-dorkgpt",
+   "name": "DorkGPT",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Generate Google search operators (dorks) with AI.",
+   "url": "https://dorkgpt.com/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-llama-coder",
+   "name": "Llama Coder",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Open-source AI app/code generator.",
+   "url": "https://llamacoder.together.ai/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-meta-ai",
+   "name": "Meta AI",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Meta AI assistant.",
+   "url": "https://www.meta.ai/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-pentestgpt",
+   "name": "PentestGPT",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI assistant for authorised penetration testing.",
+   "url": "https://pentestgpt.ai/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-adobe-express",
+   "name": "Adobe Express",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Quick design, video and animate-from-audio.",
+   "url": "https://new.express.adobe.com/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-adobe-firefly",
+   "name": "Adobe Firefly",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Generative images from Adobe.",
+   "url": "https://firefly.adobe.com/inspire/images",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-microsoft-designer",
+   "name": "Microsoft Designer",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI graphic design.",
+   "url": "https://designer.microsoft.com/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-ideogram",
+   "name": "Ideogram",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI image generation with strong typography.",
+   "url": "https://ideogram.ai/t/explore",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-hyperwrite",
+   "name": "HyperWrite",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI personal assistant and writer.",
+   "url": "https://app.hyperwriteai.com/personalassistant",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-google-ai-studio-stream",
+   "name": "Google AI Studio — Stream",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Realtime voice and video with Gemini.",
+   "url": "https://aistudio.google.com/live",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-kortix",
+   "name": "Kortix",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Autonomous AI worker for long tasks.",
+   "url": "https://www.kortix.com/dashboard",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-browseract",
+   "name": "BrowserAct",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "No-code AI web scraper for agents.",
+   "url": "https://www.browseract.com/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-ai-prompt-library",
+   "name": "AI Prompt Library",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "AI",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Prompt templates collection.",
+   "url": "https://contentatscale.ai/ai-prompt-library/",
+   "tags": [
+    "bookmark",
+    "ai"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-miro",
+   "name": "Miro",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Productivity",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Online whiteboard.",
+   "url": "https://miro.com/app/dashboard",
+   "tags": [
+    "bookmark",
+    "productivity"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-bricks",
+   "name": "Bricks",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Productivity",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI spreadsheets, docs and dashboards.",
+   "url": "https://app.thebricks.com/",
+   "tags": [
+    "bookmark",
+    "productivity"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-edraw-ai",
+   "name": "Edraw.AI",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Productivity",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI diagrams and mind maps.",
+   "url": "https://www.edraw.ai/app/aipower",
+   "tags": [
+    "bookmark",
+    "productivity"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-reclaim-ai",
+   "name": "Reclaim.ai",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Productivity",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "AI calendar planner for focus time and tasks.",
+   "url": "https://app.reclaim.ai/planner",
+   "tags": [
+    "bookmark",
+    "productivity"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-tana",
+   "name": "Tana",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Productivity",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Outliner and knowledge-graph notes.",
+   "url": "https://app.tana.inc/",
+   "tags": [
+    "bookmark",
+    "productivity"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-coinmarketcap",
+   "name": "CoinMarketCap",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Crypto prices and market caps.",
+   "url": "https://coinmarketcap.com/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-coingecko",
+   "name": "CoinGecko",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Crypto prices, fundamentals and on-chain metrics.",
+   "url": "https://www.coingecko.com/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-cryptorank",
+   "name": "CryptoRank",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Token stats, fundraising and analytics.",
+   "url": "https://cryptorank.io/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-crypto-bubbles",
+   "name": "Crypto Bubbles",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Bubble-chart view of the crypto market.",
+   "url": "https://cryptobubbles.net/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-fear-greed-index",
+   "name": "Fear & Greed Index",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Crypto market sentiment at a glance.",
+   "url": "https://alternative.me/crypto/fear-and-greed-index/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-coinglass",
+   "name": "CoinGlass",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Derivatives data: open interest, funding, liquidations.",
+   "url": "https://www.coinglass.com/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-coinglass-liquidation-heatmap",
+   "name": "CoinGlass Liquidation Heatmap",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Where large liquidations may cluster.",
+   "url": "https://www.coinglass.com/pro/futures/LiquidationHeatMap?coin=BTC&type=pair",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-defillama",
+   "name": "DefiLlama",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "DeFi TVL, DEX and stablecoin dashboard.",
+   "url": "https://defillama.com/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-glassnode-studio",
+   "name": "Glassnode Studio",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "On-chain market intelligence.",
+   "url": "https://studio.glassnode.com/home",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-arkham-intel",
+   "name": "Arkham Intel",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Blockchain analytics: who is behind wallets.",
+   "url": "https://intel.arkm.com/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-messari",
+   "name": "Messari",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Crypto research, unlocks and fundraising data.",
+   "url": "https://messari.io/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-cryptopanic",
+   "name": "CryptoPanic",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Crypto news aggregator with impact votes.",
+   "url": "https://cryptopanic.com/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-lunarcrush",
+   "name": "LunarCrush",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Social-media analytics for crypto.",
+   "url": "https://lunarcrush.com/categories/cryptocurrencies",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-tokenomist",
+   "name": "Tokenomist",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Token unlock and vesting schedules.",
+   "url": "https://tokenomist.ai/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-ico-analytics",
+   "name": "ICO Analytics",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "ICO and project analytics.",
+   "url": "https://icoanalytics.org/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-cielo-finance",
+   "name": "Cielo Finance",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Wallet-tracking feed.",
+   "url": "https://app.cielo.finance/feed",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-axiom",
+   "name": "Axiom",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Solana DeFi trading terminal.",
+   "url": "https://axiom.trade/discover?chain=sol",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-padre-terminal",
+   "name": "Padre Terminal",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Memecoin trading terminal.",
+   "url": "https://trade.padre.gg/trenches",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-nova",
+   "name": "Nova",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Trading terminal.",
+   "url": "https://nova.trade/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-pump-fun",
+   "name": "Pump.fun",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Solana token launchpad.",
+   "url": "https://pump.fun/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-bettertrader-scanner",
+   "name": "BetterTrader Scanner",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Binance USDT pair scanner.",
+   "url": "https://bettertrader.io/cryptoscannerdark?exchange=Binance&quote_coin=USDT&limit=50",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-cryptowatch-net",
+   "name": "CryptoWatch.NET",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Multi-chart TradingView grid.",
+   "url": "https://cryptowatch.net/?c=BITFINEX:BTCUSD,BITFINEX:ETHUSD,BITFINEX:LTCUSD,BINANCE:SOLUSDT,BINANCE:XRPUSDT,BINANCE:DOGEUSDT,CRYPTOCAP:TOTAL,CRYPTOCAP:BTC.D",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-mexc",
+   "name": "MEXC",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Crypto exchange.",
+   "url": "https://www.mexc.com/",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-binance-futures-nearusdt",
+   "name": "Binance Futures — NEARUSDT",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Crypto",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "USDⓈ-M perpetual chart.",
+   "url": "https://www.binance.com/en/futures/NEARUSDT",
+   "tags": [
+    "bookmark",
+    "crypto"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-tradingview-chart",
+   "name": "TradingView chart",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Saved TradingView layout.",
+   "url": "https://www.tradingview.com/chart/UcL7Bv9J/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-xauusd-technicals-tradingview",
+   "name": "XAUUSD technicals — TradingView",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Gold technical-analysis summary.",
+   "url": "https://www.tradingview.com/symbols/XAUUSD/technicals/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-xauusd-technicals-investing-com",
+   "name": "XAUUSD technicals — Investing.com",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Gold moving-average and indicator signals.",
+   "url": "https://www.investing.com/currencies/xau-usd-technical",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-fastbull-charts",
+   "name": "FastBull Charts",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Online charting for FX, stocks and futures.",
+   "url": "https://www.fastbull.com/traders/chart",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-gocharting",
+   "name": "GoCharting",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Charting and trading terminal.",
+   "url": "https://gocharting.com/terminal?ticker=BYBIT:BTCUSD",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-tradinglead",
+   "name": "TradingLead",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Charting with bar replay and backtesting.",
+   "url": "https://tradinglead.in/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-fx-replay",
+   "name": "FX Replay",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Bar replay and backtesting.",
+   "url": "https://app.fxreplay.com/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-traders-casa",
+   "name": "Traders Casa",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Trading tools.",
+   "url": "https://app.traderscasa.com/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-finviz-forex",
+   "name": "Finviz Forex",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Forex performance heat map.",
+   "url": "https://finviz.com/forex.ashx",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-forex-factory",
+   "name": "Forex Factory",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Economic calendar and forex news.",
+   "url": "https://www.forexfactory.com/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-currency-strength-meter",
+   "name": "Currency Strength Meter",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Live relative currency strength.",
+   "url": "https://currencystrengthmeter.org/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-commodity-strength-marketmilk",
+   "name": "Commodity Strength — MarketMilk",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Commodity strength across timeframes.",
+   "url": "https://marketmilk.babypips.com/commodities/currency-strength",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-forex-correlation-myfxbook",
+   "name": "Forex Correlation — Myfxbook",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Real-time pair correlations.",
+   "url": "https://www.myfxbook.com/forex-market/correlation",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-forex-sentiment-myfxbook",
+   "name": "Forex Sentiment — Myfxbook",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Retail trader positioning.",
+   "url": "https://www.myfxbook.com/community/outlook",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-currency-strength-matrix-explained",
+   "name": "Currency Strength Matrix explained",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "How to read a strength matrix.",
+   "url": "https://www.marketsmadeclear.com/Resources/Currency-Strength/What-is-the-Matrix.aspx",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-candlestick-pattern-simulator",
+   "name": "Candlestick Pattern Simulator",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Practise reading candlestick patterns.",
+   "url": "https://priceactionninja.com/interactive-candlestick-pattern-practice-simulator-for-traders/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-investaloy",
+   "name": "Investaloy",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Markets",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Bangladesh share-market investing courses.",
+   "url": "https://www.investaloy.com/",
+   "tags": [
+    "bookmark",
+    "markets"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-edclub",
+   "name": "edclub",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Learning",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Free courses and typing lessons.",
+   "url": "https://www.edclub.com/",
+   "tags": [
+    "bookmark",
+    "learning"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-mind-luster",
+   "name": "Mind Luster",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Learning",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Free certified online courses.",
+   "url": "https://www.mindluster.com/",
+   "tags": [
+    "bookmark",
+    "learning"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-3c-engineering-research",
+   "name": "3C Engineering & Research",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Learning",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Engineering training, Bangladesh.",
+   "url": "https://3ctrainingbd.com/",
+   "tags": [
+    "bookmark",
+    "learning"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-ghoori-learning",
+   "name": "Ghoori Learning",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Learning",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Online courses, Bangladesh.",
+   "url": "https://ghoorilearning.com/",
+   "tags": [
+    "bookmark",
+    "learning"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-bohubrihi",
+   "name": "Bohubrihi",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Learning",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Online courses, Bangladesh.",
+   "url": "https://bohubrihi.com/",
+   "tags": [
+    "bookmark",
+    "learning"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-msb-academy",
+   "name": "MSB Academy",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Learning",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Online learning platform, Bangladesh.",
+   "url": "https://www.msbacademy.com/",
+   "tags": [
+    "bookmark",
+    "learning"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-hacksnation",
+   "name": "HacksNation",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Learning",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Learning community.",
+   "url": "https://hacksnation.com/",
+   "tags": [
+    "bookmark",
+    "learning"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-fazeel-usmani",
+   "name": "Fazeel Usmani",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Learning",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Blogging, SEO and online-income guides.",
+   "url": "https://www.fazeelusmani.com/",
+   "tags": [
+    "bookmark",
+    "learning"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-e-leo-codex-leicester",
+   "name": "e-Leo — Codex Leicester",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Research",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Leonardo da Vinci manuscripts, digitised.",
+   "url": "https://www.leonardodigitale.com/en/browse/codex-leicester/0001-r/",
+   "tags": [
+    "bookmark",
+    "research"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-twitch",
+   "name": "Twitch",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Research",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Live streams.",
+   "url": "https://www.twitch.tv/",
+   "tags": [
+    "bookmark",
+    "research"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-teletalk-job-portal",
+   "name": "Teletalk Job Portal",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Jobs",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Bangladesh government job applications.",
+   "url": "https://alljobs.teletalk.com.bd/en/",
+   "tags": [
+    "bookmark",
+    "jobs"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-bangladesh-national-portal",
+   "name": "Bangladesh National Portal",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Jobs",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Government information portal.",
+   "url": "https://bangladesh.gov.bd/index.php",
+   "tags": [
+    "bookmark",
+    "jobs"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-bdjobs",
+   "name": "Bdjobs",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Jobs",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Largest job site in Bangladesh.",
+   "url": "https://www.bdjobs.com/",
+   "tags": [
+    "bookmark",
+    "jobs"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-chakrir-khobor",
+   "name": "Chakrir Khobor",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Jobs",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Job circulars (BN).",
+   "url": "https://chakrirkhobor.com.bd/",
+   "tags": [
+    "bookmark",
+    "jobs"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-bd-govt-jobs",
+   "name": "BD Govt Jobs",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Jobs",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Government job circulars.",
+   "url": "https://bdgovtjobs.com/",
+   "tags": [
+    "bookmark",
+    "jobs"
+   ],
+   "added": "2026-09-23"
+  },
+  {
+   "id": "bm-assignments-abroad-times",
+   "name": "Assignments Abroad Times",
+   "owner": "Rahat",
+   "project": "Bookmarks",
+   "category": "Jobs",
+   "kind": "Bookmark",
+   "status": "live",
+   "description": "Gulf and overseas jobs.",
+   "url": "https://assignmentsabroadtimes.in/",
+   "tags": [
+    "bookmark",
+    "jobs"
+   ],
+   "added": "2026-09-23"
+  }
+ ]
+}

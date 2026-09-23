@@ -7,6 +7,7 @@ import './styles/v4.css';
 import './styles/vault.css';
 import './styles/engine.css';
 import './styles/bento.css';
+import './styles/jarvis.css';
 
 // Let the page own its scroll position rather than the browser restoring one
 // before the tall scroll tracks have laid out.

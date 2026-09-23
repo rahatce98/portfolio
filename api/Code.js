@@ -12,6 +12,7 @@
  * POST {a:'setup', pin}            -> sets PIN only if none exists
  * POST {a:'check', pin}
  * POST {a:'upsert', pin, tool}
+ * POST {a:'bulk', pin, tools:[...]} -> up to 300 upserts (bookmark import)
  * POST {a:'delete', pin, id}       -> soft delete
  * POST {a:'restore', pin, id}
  * POST {a:'trash', pin}            -> deleted records
@@ -176,6 +177,17 @@ function doPost(e) {
       P.setProperty('t_' + t.id, JSON.stringify(t));
       log_({ at: t.updated, a: 'upsert', id: t.id });
       return out_({ ok: true, tool: t });
+    }
+    if (b.a === 'bulk') {
+      // Many records in one call (bookmark import from Jarvis). Bad rows are
+      // skipped and reported, not fatal.
+      var rows = Array.isArray(b.tools) ? b.tools.slice(0, 300) : [], map = {}, bad = [];
+      rows.forEach(function (x) {
+        try { var r = clean_(x); map['t_' + r.id] = JSON.stringify(r); } catch (err) { bad.push(String(x && x.url || '')); }
+      });
+      if (Object.keys(map).length) P.setProperties(map);
+      log_({ at: new Date().toISOString(), a: 'bulk', id: Object.keys(map).length + ' rows' });
+      return out_({ ok: true, saved: Object.keys(map).length, skipped: bad });
     }
     if (b.a === 'delete' || b.a === 'restore') {
       var k = 't_' + String(b.id || ''), raw = P.getProperty(k), rec;
