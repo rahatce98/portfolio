@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { hyd, MATERIALS } from '../jarvis/engineering';
+import { setOs } from '../os/context';
 
 /* -----------------------------------------------------------------------------
  * LAB-04 — Sewer pipe hydraulics (Manning, partially full circular pipe)
@@ -14,22 +16,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
  * same numbers, so the drawing is the calculation.
  * -------------------------------------------------------------------------- */
 
-const MATERIALS = [
-  { id: 'upvc', label: 'uPVC', n: 0.011 },
-  { id: 'grp', label: 'GRP', n: 0.010 },
-  { id: 'rcc', label: 'RCC', n: 0.013 },
-  { id: 'vc', label: 'Vitrified clay', n: 0.014 },
-];
-
-function hyd(D, y, S, n) {
-  const r = Math.min(0.9999, Math.max(0.0001, y));
-  const th = 2 * Math.acos(1 - 2 * r);
-  const A = (D * D / 8) * (th - Math.sin(th));
-  const P = (D * th) / 2;
-  const R = A / P;
-  const V = (1 / n) * Math.pow(R, 2 / 3) * Math.sqrt(S);
-  return { A, P, R, V, Q: A * V, th, T: D * Math.sin(th / 2) };
-}
+// The maths lives in jarvis/engineering.js so J.A.R.V.I.S. answers with the
+// exact same numbers this lab draws.
 
 const fmt = (v, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : '—');
 
@@ -53,6 +41,10 @@ export default function PipeLab() {
     const qf = hyd(1, 0.9999, 0.01, 0.013).Q;
     return pts.map(([k, q]) => [k, q / qf]);
   }, []);
+  // Publish the live inputs so "what's the velocity?" asked here uses this pipe.
+  useEffect(() => setOs({ labState: { D, S, y, n } }), [D, S, y, n]);
+  useEffect(() => () => setOs({ labState: null }), []);
+
   const qRatio = r.Q / full.Q;
   const selfClean = r.V >= 0.6;
   const surcharge = y > 0.8;

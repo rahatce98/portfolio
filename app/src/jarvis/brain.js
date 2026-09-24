@@ -12,6 +12,11 @@
  *               one-time download, then fully offline)
  * If none answer, the console still works: the tool router is local.
  *
+ * Preference order (Rahat OS): local → in-browser → cloud, so a prompt only
+ * leaves the device when nothing on it can answer. Messages flagged
+ * { private: true } (what J.A.R.V.I.S. remembers about the owner) go to local
+ * and in-browser models only — never to a cloud provider.
+ *
  * No secrets live in this file — none of these providers use one.
  * -------------------------------------------------------------------------- */
 
@@ -23,12 +28,17 @@ const WEBLLM_MODEL = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
 const K = 'rh-jv-brain';
 
 export const PROVIDERS = [
-  { id: 'ollama', label: 'Ollama (local)', note: 'open-source model on this computer' },
-  { id: 'chrome', label: 'Chrome on-device', note: 'Gemini Nano built into Chrome' },
-  { id: 'bridge', label: 'Cloud (bridge)', note: 'free-tier Gemini / Groq via the owner’s Apps Script' },
-  { id: 'pollinations', label: 'Pollinations', note: 'free anonymous cloud tier' },
-  { id: 'webllm', label: 'WebLLM', note: 'Qwen 2.5 1.5B in this tab (WebGPU)' },
+  { id: 'ollama', label: 'Ollama (local)', note: 'open-source model on this computer', kind: 'Local' },
+  { id: 'chrome', label: 'Chrome on-device', note: 'Gemini Nano built into Chrome', kind: 'Browser' },
+  { id: 'webllm', label: 'WebLLM', note: 'Qwen 2.5 1.5B in this tab (WebGPU)', kind: 'Browser' },
+  { id: 'bridge', label: 'Cloud (bridge)', note: 'free-tier Gemini / Groq via the owner’s Apps Script', kind: 'Cloud' },
+  { id: 'pollinations', label: 'Pollinations', note: 'free anonymous cloud tier', kind: 'Cloud' },
 ];
+const CLOUD = new Set(PROVIDERS.filter((p) => p.kind === 'Cloud').map((p) => p.id));
+const online = () => typeof navigator === 'undefined' || navigator.onLine !== false;
+
+/** 'Local' | 'Browser' | 'Cloud' for a provider id, or null. */
+export const brainKind = (id) => PROVIDERS.find((p) => p.id === id)?.kind || null;
 
 const status = {}; // id -> { ok, detail, model }
 let prefer = 'auto';
@@ -67,7 +77,8 @@ async function detectOllama() {
     ollamaModel = m.find((x) => /llama3|qwen|mistral|gemma|phi/i.test(x)) || m[0];
     return { ok: true, detail: ollamaModel, model: ollamaModel };
   } catch {
-    return { ok: false, detail: 'not running (optional)' };
+    // From the published https site Ollama must also allow the origin.
+    return { ok: false, detail: location.hostname === 'localhost' ? 'not running — start Ollama (optional)' : 'not reachable — run Ollama with OLLAMA_ORIGINS=https://rahatce98.github.io' };
   }
 }
 
@@ -133,14 +144,16 @@ function detectWebllm() {
 }
 
 /** Probe every provider; `onStep(id, result)` fires as each one settles. */
-export async function detect(onStep, { local = false } = {}) {
+export async function detect(onStep, { local = false, owner = false } = {}) {
   // Probing localhost can trigger Chrome's local-network permission prompt, so
   // Ollama is only checked for the owner or after "use ollama".
   const jobs = {
     ollama: local ? detectOllama : async () => ({ ok: false, detail: 'say “use ollama” to check this computer' }),
     chrome: detectChrome,
-    pollinations: detectPollinations,
-    bridge: detectBridge,
+    pollinations: online() ? detectPollinations : async () => ({ ok: false, detail: 'offline' }),
+    // The bridge is the owner's own Apps Script — visitors never need it, so
+    // it is only contacted in an unlocked owner session.
+    bridge: !online() ? async () => ({ ok: false, detail: 'offline' }) : owner ? detectBridge : async () => ({ ok: false, detail: 'owner only — say “unlock”' }),
     webllm: async () => detectWebllm(),
   };
   await Promise.all(
@@ -154,7 +167,7 @@ export async function detect(onStep, { local = false } = {}) {
 
 export const activeProvider = () => order()[0] || null;
 function order() {
-  const ranked = ['bridge', 'ollama', 'chrome', 'webllm', 'pollinations'].filter((id) => status[id]?.ok);
+  const ranked = PROVIDERS.map((p) => p.id).filter((id) => status[id]?.ok && (online() || !CLOUD.has(id)));
   if (prefer !== 'auto' && status[prefer]?.ok) return [prefer, ...ranked.filter((x) => x !== prefer)];
   return ranked;
 }
@@ -223,22 +236,32 @@ async function callBridge(messages) {
 const CALL = { bridge: callBridge, pollinations: callPollinations, ollama: callOllama, chrome: callChrome, webllm: callWebllm };
 
 /** Ask the best available model; falls through the chain on any failure. */
+/** Drop private context for cloud providers; strip our own flags for all. */
+// System messages are merged into one leading message: WebLLM rejects a
+// system prompt anywhere but first.
+export const forProvider = (id, messages) => {
+  const kept = messages.filter((m) => !(m.private && CLOUD.has(id)));
+  const sys = kept.filter((m) => m.role === 'system').map((m) => m.content).join('\n\n');
+  const rest = kept.filter((m) => m.role !== 'system').map(({ role, content }) => ({ role, content }));
+  return sys ? [{ role: 'system', content: sys }, ...rest] : rest;
+};
+
 export async function think(messages, onTry) {
   const errors = [];
   for (const id of order()) {
     onTry?.(id);
     try {
-      const text = await CALL[id](messages);
+      const text = await CALL[id](forProvider(id, messages));
       return { text: text.trim(), provider: id };
     } catch (e) {
       errors.push(`${id}: ${e.message || e}`);
     }
   }
   // Last chance: the cloud tier may have been down only during boot.
-  if (!order().includes('pollinations')) {
+  if (!order().includes('pollinations') && online()) {
     onTry?.('pollinations');
     try {
-      const text = await callPollinations(messages);
+      const text = await callPollinations(forProvider('pollinations', messages));
       status.pollinations = { ok: true, detail: 'recovered' };
       return { text: text.trim(), provider: 'pollinations' };
     } catch (e) {

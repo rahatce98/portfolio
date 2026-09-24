@@ -1,0 +1,26 @@
+{
+  "id": "/portfolio/",
+  "name": "Rahat OS",
+  "short_name": "Rahat OS",
+  "description": "Md. Rahat Hossain — civil engineering portfolio, engineering labs, tools and the J.A.R.V.I.S. assistant. Works offline.",
+  "start_url": "/portfolio/?source=pwa",
+  "scope": "/portfolio/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#030407",
+  "theme_color": "#04060b",
+  "categories": ["productivity", "utilities", "education"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Ask J.A.R.V.I.S.", "short_name": "JARVIS", "url": "/portfolio/?jarvis=1", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Tools", "url": "/portfolio/#tools", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Projects", "url": "/portfolio/#projects", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Engineering Labs", "url": "/portfolio/#lab", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

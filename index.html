@@ -17,7 +17,16 @@
     <!-- Icons. Vite rewrites these against `base`, so they resolve under the
          /portfolio/ subpath as well as at a domain root. -->
     <link rel="icon" type="image/svg+xml" href="/portfolio/assets/favicon.svg" />
-    <link rel="apple-touch-icon" href="/portfolio/assets/img/profile.jpg" />
+    <link rel="apple-touch-icon" href="/portfolio/assets/icons/apple-touch-icon.png" />
+
+    <!-- Rahat OS — installable app. The service worker is registered from
+         src/os/pwa.js in production builds only. -->
+    <link rel="manifest" href="/portfolio/manifest.webmanifest" />
+    <meta name="application-name" content="Rahat OS" />
+    <meta name="apple-mobile-web-app-title" content="Rahat OS" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
@@ -86,13 +95,12 @@
       try {
         var t = localStorage.getItem('rh-theme');
         if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        if (localStorage.getItem('rh-motion') === 'reduce') document.documentElement.setAttribute('data-motion', 'reduce');
       } catch (e) {}
     </script>
-    <script type="module" crossorigin src="/portfolio/build/index-878N5Q7N.js"></script>
-    <link rel="modulepreload" crossorigin href="/portfolio/build/react-DUNZn0BL.js">
-    <link rel="modulepreload" crossorigin href="/portfolio/build/three-Bj-NaVDc.js">
-    <link rel="modulepreload" crossorigin href="/portfolio/build/r3f-D7Z6CsCq.js">
-    <link rel="stylesheet" crossorigin href="/portfolio/build/index-U7QcNcvv.css">
+    <script type="module" crossorigin src="/portfolio/build/index-dS-SShMm.js"></script>
+    <link rel="modulepreload" crossorigin href="/portfolio/build/react-2aQwQ186.js">
+    <link rel="stylesheet" crossorigin href="/portfolio/build/index-DrsnTMBt.css">
   </head>
 
   <body>
@@ -112,6 +120,6 @@
           <a style="color: #56dcff" href="https://www.linkedin.com/in/md-rahathossain">LinkedIn</a>.
         </p>
       </div>
-    </noscript>
+    </noscript>
   </body>
 </html>

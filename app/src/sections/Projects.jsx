@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { projects, projectCategories, experience } from '../data/site';
 import { useReveal } from '../hooks/useScroll';
+import { prefersReducedMotion } from '../hooks/useEnv';
 import ProjectCard from '../components/ProjectCard';
 
 /* 04 — Projects: the filterable grid, then the professional record that the
@@ -9,6 +10,23 @@ import ProjectCard from '../components/ProjectCard';
 
 export default function Projects() {
   const [filter, setFilter] = useState('All');
+
+  // J.A.R.V.I.S. / palette "show … project": clear the filter, bring the card
+  // into view and give it a brief highlight.
+  useEffect(() => {
+    const on = (e) => {
+      setFilter('All');
+      setTimeout(() => {
+        const el = document.getElementById(`project-${e.detail}`);
+        if (!el) return;
+        el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'center' });
+        el.setAttribute('data-flash', '');
+        setTimeout(() => el.removeAttribute('data-flash'), 2400);
+      }, 60);
+    };
+    window.addEventListener('rh-project', on);
+    return () => window.removeEventListener('rh-project', on);
+  }, []);
   const shown = useMemo(
     () => (filter === 'All' ? projects : projects.filter((p) => p.category === filter)),
     [filter]
@@ -22,7 +40,7 @@ export default function Projects() {
       <div className="wrap">
         <div className="section-head" data-reveal>
           <div>
-            <span className="section-head__index">06 — Projects</span>
+            <span className="section-head__index">02 — Projects</span>
             <h2>Built, used, and still running.</h2>
           </div>
           <p>

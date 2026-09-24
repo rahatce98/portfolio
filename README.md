@@ -6,6 +6,64 @@ GitHub Pages at **<https://rahatce98.github.io/portfolio/>**.
 The rocket, the vehicle and the mechanical systems are real 3D scenes you can orbit, take
 apart, and inspect component by component — not images, and not CSS pretending to be 3D.
 
+It is also **Rahat OS**: an installable, offline-capable workspace with **J.A.R.V.I.S.** as a
+global assistant on every page. Everything runs on free, local-first technology — no paid API,
+no key in the browser, and every command works with no AI model at all.
+
+---
+
+## 0. Rahat OS at a glance
+
+| Key | What it does |
+|---|---|
+| `Ctrl/⌘ J` or the orb (bottom-right) | J.A.R.V.I.S. — panel on desktop, bottom sheet on phones |
+| `Ctrl/⌘ K` or `/` | Command palette — sections, projects, labs, tools, bookmarks, actions, recent |
+| `?` | Keyboard map |
+
+**How a command runs**
+
+```
+typed / spoken / palette / button
+  → jarvis/tools.js        deterministic parser (no AI) — "open RFI", "go to projects",
+                           "velocity for 300 mm pipe at 40 L/s", "show my DSIP project" …
+  → os/actions.js          the action registry: { tool, arguments } → schema check →
+                           confirm card if destructive/external → run
+  → jarvis/brain.js        only if nothing matched: a free model, preferred in this order
+                           Ollama (local) → Chrome on-device → WebLLM (in-tab) → cloud.
+                           The model may answer, CALL a read-only data tool, or propose an
+                           ACTION — which goes through the same registry and validation.
+```
+
+A model can never touch the DOM, storage or network directly; unknown or malformed actions
+are refused, and `openUrl` / `clearHistory` always ask first. What J.A.R.V.I.S. remembers about
+the owner is sent to local and in-browser models only — never to a cloud provider.
+
+**Where things live**
+
+| File | Role |
+|---|---|
+| `app/src/jarvis/engine.jsx` | The one J.A.R.V.I.S. engine (state machine, voice, router, AI) shared app-wide |
+| `app/src/jarvis/tools.js` | Command parser — add a command here |
+| `app/src/os/actions.js` | Action registry with schemas — add a capability here |
+| `app/src/os/searchIndex.js` | Universal search index (built from `site.js`, `LABS`, `tools.json`) |
+| `app/src/os/context.js` | App context J.A.R.V.I.S. reasons about (section, open lab, lab inputs, online) |
+| `app/src/os/history.js` · `favorites.js` | Command history · quick tools (same `rh-tool-pins` stars as the Tools grid) |
+| `app/src/jarvis/engineering.js` | Pipe velocity, Manning, unit conversion — shared with the Sewer Hydraulics lab |
+| `app/src/components/JarvisDock.jsx` · `JarvisConsole.jsx` · `CommandPalette.jsx` | The global UI |
+| `app/src/os/pwa.js` · `scripts/sw.template.js` | Install prompt · offline service worker (generated at build) |
+
+**Local AI (optional).** Install [Ollama](https://ollama.com), `ollama pull llama3.2`, and for
+the published site allow its origin once: set `OLLAMA_ORIGINS=https://rahatce98.github.io`
+before starting Ollama. Then say “use ollama”. On `localhost` no origin setting is needed.
+
+**Installing.** On the published https site, Chrome/Edge show *Install Rahat OS* in the
+address bar (or say “install app”); Android offers *Add to Home screen*. The app shell,
+tools index and labs are precached, so navigation, the palette, calculators and history
+work offline. Live data (weather, prices, news, web search) and cloud AI say clearly when
+they need the internet.
+
+`python scripts/make-icons.py` regenerates the PNG app icons.
+
 ---
 
 ## 1. Repository layout
@@ -213,6 +271,13 @@ traverses the span.
 
 - `@react-three/fiber` logs a `THREE.Clock is deprecated` warning on newer Three.js versions.
   It comes from inside the library, not from this code, and is harmless.
+- Voice input uses the browser's own speech recognition. In Chrome and Edge that service needs
+  the internet, so the mic is disabled (with a reason) in offline mode; Firefox has none.
+- iOS Safari never fires the install prompt — use Share → *Add to Home Screen*.
+- From the published https site, Ollama is reachable only when started with
+  `OLLAMA_ORIGINS=https://rahatce98.github.io`; Chrome may also ask for local-network access.
+- The anonymous Pollinations tier and the owner's cloud bridge are optional extras and may
+  disappear; nothing depends on them.
 - The Rocket Lab is a scroll-driven sequence, so its section is deliberately tall. The nav
   rail and the component stepper both jump straight to any stage.
 - There is no contact form. A static Pages site has no server to post one to, and a form that

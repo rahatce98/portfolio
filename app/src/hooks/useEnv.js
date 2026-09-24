@@ -55,8 +55,10 @@ export function dprRange(tier = perfTier()) {
   return [1, 1];
 }
 
+/** OS preference, or the per-device override set from Rahat OS ("reduce motion"). */
 export function prefersReducedMotion() {
   if (typeof window === 'undefined') return false;
+  if (document.documentElement.getAttribute('data-motion') === 'reduce') return true;
   return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 

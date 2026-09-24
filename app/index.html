@@ -17,7 +17,16 @@
     <!-- Icons. Vite rewrites these against `base`, so they resolve under the
          /portfolio/ subpath as well as at a domain root. -->
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-    <link rel="apple-touch-icon" href="/assets/img/profile.jpg" />
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
+
+    <!-- Rahat OS — installable app. The service worker is registered from
+         src/os/pwa.js in production builds only. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="application-name" content="Rahat OS" />
+    <meta name="apple-mobile-web-app-title" content="Rahat OS" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
@@ -86,6 +95,7 @@
       try {
         var t = localStorage.getItem('rh-theme');
         if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        if (localStorage.getItem('rh-motion') === 'reduce') document.documentElement.setAttribute('data-motion', 'reduce');
       } catch (e) {}
     </script>
   </head>

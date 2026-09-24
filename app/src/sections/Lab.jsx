@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useReveal } from '../hooks/useScroll';
+import { setOs } from '../os/context';
 
 /* -----------------------------------------------------------------------------
  * 06 — Lab
@@ -131,7 +132,11 @@ export default function Lab() {
 
   useEffect(() => {
     document.body.toggleAttribute('data-theater', !!tab);
-    return () => document.body.removeAttribute('data-theater');
+    setOs({ lab: tab }); // J.A.R.V.I.S. context: which lab is open
+    return () => {
+      document.body.removeAttribute('data-theater');
+      setOs({ lab: null });
+    };
   }, [tab]);
 
   useEffect(() => {
@@ -145,6 +150,7 @@ export default function Lab() {
     const onKey = (e) => {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (document.getElementById('jdock')?.hidden === false) return; // Esc belongs to the open J.A.R.V.I.S. panel
       if (e.key === 'Escape') exit();
       else if (/^[1-6]$/.test(e.key)) open(LABS[+e.key - 1].id);
       else if (e.key === 'ArrowRight' || e.key === ']') open(LABS[(idx + 1) % LABS.length].id);
@@ -163,7 +169,7 @@ export default function Lab() {
       <div className="wrap labx__intro">
         <div className="section-head" data-reveal>
           <div>
-            <span className="section-head__index">06 — Lab</span>
+            <span className="section-head__index">05 — Engineering Labs</span>
             <h2>
               Learn by building<span className="dim"> — six working studies.</span>
             </h2>

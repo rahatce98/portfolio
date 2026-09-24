@@ -8,6 +8,10 @@ import './styles/vault.css';
 import './styles/engine.css';
 import './styles/bento.css';
 import './styles/jarvis.css';
+import './styles/os.css';
+import { registerPWA } from './os/pwa';
+
+registerPWA();
 
 // Let the page own its scroll position rather than the browser restoring one
 // before the tall scroll tracks have laid out.

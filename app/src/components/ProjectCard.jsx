@@ -1,5 +1,6 @@
 import { useCallback, useRef, useMemo } from 'react';
 import { prefersReducedMotion } from '../hooks/useEnv';
+import { slug } from '../os/searchIndex';
 
 /* -----------------------------------------------------------------------------
  * Project card with a real perspective tilt.
@@ -120,7 +121,7 @@ export default function ProjectCard({ project, index }) {
   const links = Object.entries(project.links ?? {});
 
   return (
-    <article className="pcard" data-reveal style={{ '--reveal-delay': `${(index % 3) * 90}ms` }}>
+    <article className="pcard" id={`project-${slug(project.title)}`} data-reveal style={{ '--reveal-delay': `${(index % 3) * 90}ms` }}>
       <div className="pcard__inner" ref={ref} onPointerMove={onMove} onPointerLeave={onLeave}>
         <span className="pcard__glare" aria-hidden="true" />
         <div className="pcard__lift">

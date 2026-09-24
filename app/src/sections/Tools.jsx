@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useReveal } from '../hooks/useScroll';
 import { toast } from '../components/Toast';
+import { usePins, togglePin as toggleSharedPin } from '../os/favorites';
 
 /* -----------------------------------------------------------------------------
  * 02 — Tools index
@@ -19,7 +20,6 @@ import { toast } from '../components/Toast';
 export const API =
   'https://script.google.com/macros/s/AKfycbz8HA5JTFXdI0nUFWry56DmPWMv-cQ55LB4wz4pgpI00XGfwwJfBbyiHF7EHF5wGpD-/exec';
 const API_EDITOR = 'https://script.google.com/d/1Vl4_MfYGLL2DCW31xwEcjg5zOeZntxpwaJqObMBY8ZolzjfY1y-OXteu/edit';
-const K_PINS = 'rh-tool-pins';
 const K_RECENT = 'rh-tool-recent';
 const K_CACHE = 'rh-tool-cache';
 const K_SESSION = 'rh-admin';
@@ -73,6 +73,10 @@ export function refreshTools() {
             .catch(() => []),
         ),
       ).then((a) => a.flat());
+  // Publish the shipped baseline the moment it lands: the Apps Script API can
+  // take seconds (or never answer offline), and the index, the palette and
+  // J.A.R.V.I.S. should not sit empty waiting for it.
+  base.then((b) => !state.base && emit({ base: b }));
   const remote = fetch(`${API}?a=list&t=${Date.now()}`)
     .then((r) => r.json())
     .then((j) => {
@@ -153,7 +157,7 @@ function initials(name = '') {
   return ((w[0]?.[0] || '') + (w[1]?.[0] || w[0]?.[1] || '')).toUpperCase();
 }
 
-function hay(t) {
+export function hay(t) {
   return [t.name, t.owner, t.project, t.category, t.kind, t.status, t.description, t.url, t.short, ...(t.tags || []), ...Object.values(t.meta || {})]
     .filter(Boolean)
     .join(' ')
@@ -679,7 +683,7 @@ export default function Tools() {
   const [cat, setCat] = useState('All');
   const [proj, setProj] = useState('All');
   const [view, setView] = useState(() => store.get('rh-tool-view', 'grid'));
-  const [pins, setPins] = useState(() => store.get(K_PINS, []));
+  const pins = usePins(); // shared with the palette, dock and J.A.R.V.I.S.
   const [editing, setEditing] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [pinOpen, setPinOpen] = useState(false);
@@ -696,22 +700,14 @@ export default function Tools() {
     else setPinOpen(true);
   }, []);
 
-  // "/" jumps to search while the section is on screen; global events let the
-  // palette, Jarvis and shortcuts drive this section.
+  // Global events let the palette, J.A.R.V.I.S. and shortcuts drive this
+  // section. ("/" now opens the universal command palette, which searches
+  // this index along with everything else.)
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.key !== '/' || e.metaKey || e.ctrlKey) return;
-      const tag = document.activeElement?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      e.preventDefault();
-      root.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setTimeout(() => input.current?.focus({ preventScroll: true }), 350);
-    };
     const onSearch = (e) => {
       setQ(e.detail || '');
       root.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
-    window.addEventListener('keydown', onKey);
     window.addEventListener('rh-add-tool', startAdd);
     window.addEventListener('rh-tool-search', onSearch);
     const unlock = () => {
@@ -720,7 +716,6 @@ export default function Tools() {
     };
     window.addEventListener('rh-unlock', unlock);
     return () => {
-      window.removeEventListener('keydown', onKey);
       window.removeEventListener('rh-add-tool', startAdd);
       window.removeEventListener('rh-tool-search', onSearch);
       window.removeEventListener('rh-unlock', unlock);
@@ -743,11 +738,7 @@ export default function Tools() {
   }, [tools, q, cat, proj, pins]);
 
   const togglePin = useCallback((id) => {
-    setPins((p) => {
-      const n = p.includes(id) ? p.filter((x) => x !== id) : [...p, id];
-      store.set(K_PINS, n);
-      return n;
-    });
+    toggleSharedPin(id);
   }, []);
 
   const onEdit = (t) => {
@@ -793,7 +784,7 @@ export default function Tools() {
       <div className="wrap">
         <div className="section-head" data-reveal>
           <div>
-            <span className="section-head__index">03 — Index</span>
+            <span className="section-head__index">06 — Tools</span>
             <h2>
               Everything I&rsquo;ve built<span className="dim">, one keystroke away.</span>
             </h2>

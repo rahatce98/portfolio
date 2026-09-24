@@ -14,6 +14,8 @@ import Bento from './sections/Bento';
 import Shortcuts from './components/Shortcuts';
 import ToastHost from './components/Toast';
 import Vault from './components/Vault';
+import JarvisDock from './components/JarvisDock';
+import { JarvisProvider } from './jarvis/engine';
 import { person, seo, socials } from './data/site';
 import { hasWebGL } from './hooks/useEnv';
 import { useScrollTo } from './hooks/useScroll';
@@ -79,8 +81,11 @@ export default function App() {
     return () => clearTimeout(t);
   }, []);
 
+  // Rahat OS: the portfolio reads first (who, what, built, technologies), the
+  // workspace layer follows, contact closes. J.A.R.V.I.S. wraps everything so
+  // the dock, the palette and the section console share one engine.
   return (
-    <>
+    <JarvisProvider>
       <Loader ready={sceneReady} />
 
       <a className="skip-link" href="#main">
@@ -90,13 +95,13 @@ export default function App() {
 
       <main id="main">
         <Hero onSceneReady={onSceneReady} />
-        <Bento />
         <Explore />
-        <Jarvis />
-        <Tools />
         <Projects />
         <Technology />
+        <Bento />
         <Lab />
+        <Tools />
+        <Jarvis />
         <Contact />
       </main>
 
@@ -124,8 +129,9 @@ export default function App() {
       <BackToTop />
       <CommandPalette />
       <Shortcuts />
+      <JarvisDock />
       <Vault />
       <ToastHost />
-    </>
+    </JarvisProvider>
   );
 }

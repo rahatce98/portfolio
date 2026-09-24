@@ -13,7 +13,7 @@ export default function Technology() {
       <div className="wrap">
         <div className="section-head" data-reveal>
           <div>
-            <span className="section-head__index">05 — Technology</span>
+            <span className="section-head__index">03 — Learning</span>
             <h2>{lab.note}</h2>
           </div>
           <p>

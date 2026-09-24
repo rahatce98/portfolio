@@ -1,0 +1,226 @@
+/* =============================================================================
+   RAHAT OS — global J.A.R.V.I.S. layer
+   Command bar, orb, dock / bottom sheet, status, results, palette additions.
+   Builds on the existing tokens (global.css) and the console skin (jarvis.css):
+   thin borders, controlled blur, colour only where it carries state.
+   ========================================================================== */
+
+/* --- state colour, shared by every J.A.R.V.I.S. surface ------------------- */
+.orb, .jdock, .cmdk__orb, .cbar__orb, .jstat { --st: 86, 220, 255; }
+[data-state='listening'] { --st: 255, 138, 120; }
+[data-state='thinking'] { --st: 150, 138, 255; }
+[data-state='searching'] { --st: 255, 196, 102; }
+[data-state='executing'] { --st: 84, 226, 184; }
+[data-state='speaking'] { --st: 120, 230, 255; }
+[data-state='success'] { --st: 104, 224, 146; }
+[data-state='error'] { --st: 255, 128, 112; }
+
+/* --- app-level reduced motion (mirrors the OS media query) ---------------- */
+:root[data-motion='reduce'] { scroll-behavior: auto; }
+:root[data-motion='reduce'] *,
+:root[data-motion='reduce'] *::before,
+:root[data-motion='reduce'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* --- nav command bar ------------------------------------------------------ */
+.cbar {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 38px; padding: 0 6px 0 12px;
+  border: 1px solid var(--line); border-radius: 12px;
+  background: color-mix(in srgb, var(--panel) 60%, transparent);
+  color: var(--ink-3); font: 400 0.84rem var(--font);
+  cursor: pointer; transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.cbar:hover { color: var(--ink); border-color: var(--line-2); background: var(--panel-strong); }
+.cbar:active { transform: scale(0.98); }
+.cbar__orb {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #d9f8ff, rgb(var(--st)) 60%);
+  box-shadow: 0 0 10px rgba(var(--st), 0.55);
+}
+.cbar__text { white-space: nowrap; }
+.cbar kbd, .cmdk__hint {
+  padding: 2px 6px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--ink-3); font: 400 0.62rem var(--mono);
+}
+@media (max-width: 1360px) { .cbar__text { display: none; } .cbar { padding-right: 6px; } }
+@media (max-width: 720px) { .cbar { display: none; } } /* the floating orb takes over */
+
+/* --- floating orb: bottom-right, every device ----------------------------- */
+.orb {
+  left: auto; right: 22px; bottom: 22px; z-index: 120;
+  background: radial-gradient(circle at 35% 30%, #d9f8ff, rgb(var(--st)) 38%, #14306e 82%);
+  box-shadow: 0 0 26px -6px rgba(var(--st), 0.55), 0 12px 30px -10px #000;
+  transition: transform 0.4s var(--spring), background 0.6s ease, box-shadow 0.6s ease;
+}
+.orb__ring { border-color: rgb(var(--st)); }
+.orb[data-state='idle'] .orb__ring { animation-duration: 4.4s; }
+.orb[data-open='true'] { transform: scale(0.9); }
+.orb[data-open='true'] .orb__ring { animation: none; opacity: 0; }
+.orb__off { position: absolute; right: -2px; top: -2px; width: 12px; height: 12px; border-radius: 50%; background: #9aa6b8; border: 2px solid var(--bg); }
+.orb:focus-visible { outline-offset: 5px; border-radius: 50%; }
+@media (max-width: 720px) {
+  .orb { display: block; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: 54px; height: 54px; }
+}
+/* J.A.R.V.I.S. stays reachable inside a lab; only the lesser chrome hides. */
+body[data-theater] .orb { display: block; }
+.keyhint { left: 22px; }
+.totop { right: 30px; bottom: 90px; }
+@media (max-width: 1180px) { .totop { right: 22px; bottom: 86px; } }
+@media (max-width: 720px) { .totop { right: 22px; bottom: calc(84px + env(safe-area-inset-bottom)); } }
+
+/* --- dock: desktop panel / mobile bottom sheet ---------------------------- */
+.jdock {
+  position: fixed; z-index: 119;
+  right: 22px; bottom: 90px;
+  width: min(420px, calc(100vw - 44px));
+  height: min(640px, calc(100vh - 130px));
+  height: min(640px, calc(100dvh - 130px));
+  display: grid; grid-template-rows: auto auto auto minmax(0, 1fr);
+  border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 22px;
+  background:
+    radial-gradient(360px 220px at 20% 0%, rgba(var(--st), 0.1), transparent 70%),
+    linear-gradient(180deg, rgba(12, 17, 29, 0.94), rgba(5, 7, 13, 0.96));
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: 0 40px 100px -30px #000, 0 0 0 1px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: #dbe5f3; overflow: hidden;
+  transform-origin: calc(100% - 26px) calc(100% + 40px);
+  animation: jdockIn 0.34s var(--ease);
+  transition: background 0.8s ease;
+}
+.jdock[hidden] { display: none; }
+@keyframes jdockIn { from { opacity: 0; transform: translateY(10px) scale(0.96); } }
+
+.jdock[data-sheet='true'] {
+  left: 0; right: 0; bottom: 0; width: 100%;
+  height: 86vh; height: 86dvh;
+  border-radius: 22px 22px 0 0; border-bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  transform-origin: 50% 100%;
+  animation: jsheetIn 0.38s var(--ease);
+}
+@keyframes jsheetIn { from { transform: translateY(40%); opacity: 0.4; } }
+/* On phones the sheet covers the orb (its own close button takes over). */
+.jdock[data-sheet='true'] { z-index: 126; }
+.jdock__scrim { position: fixed; inset: 0; z-index: 125; background: rgba(2, 4, 8, 0.55); backdrop-filter: blur(3px); animation: fade 0.2s ease-out; }
+.jdock__grip { justify-self: center; width: 38px; height: 4px; margin: 8px 0 0; border-radius: 4px; background: rgba(255, 255, 255, 0.18); }
+
+.jdock__head { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 10px 10px 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.jdock__core { width: 52px; height: 52px; }
+.jcore--compact { display: block; width: 100%; height: 100%; }
+.jdock__title { display: grid; gap: 2px; min-width: 0; }
+.jdock__title > b { font-weight: 600; font-size: 0.92rem; letter-spacing: 0.04em; color: #fff; }
+.jdock__acts { display: flex; gap: 4px; }
+.jdock__btn {
+  width: 32px; height: 32px; display: grid; place-items: center;
+  border: 1px solid transparent; border-radius: 9px; background: none; color: #8b97ab; cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+.jdock__btn:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+.jdock__btn[aria-pressed='true'] { color: rgb(var(--st)); border-color: rgba(var(--st), 0.35); }
+
+.jdock__quick { display: grid; gap: 6px; padding: 10px 14px 4px; }
+.jdock__quick > .mono { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: #5d6a80; }
+.jdock__quick > div { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+.jdock__quick button {
+  flex: none; padding: 6px 11px; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025); color: #c3cedd; font: 400 0.76rem var(--font); cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.jdock__quick button:hover { color: #fff; border-color: rgba(var(--st), 0.55); }
+.jdock__quick em { font-style: normal; font-size: 0.64rem; color: #5d6a80; margin-right: 4px; }
+
+/* The console inside the dock drops its fixed heights and fills the panel. */
+.jv2__term[data-compact='true'] { min-height: 0; max-height: none; grid-template-rows: minmax(0, 1fr) auto auto; }
+.jv2__term[data-compact='true'] .jv2__log { padding: 14px 14px 6px; font-size: 0.86rem; }
+.jdock .jv2__in input { font-size: 16px; } /* no iOS zoom-on-focus */
+
+/* --- status pill ----------------------------------------------------------- */
+.jstat { display: inline-flex; align-items: center; gap: 7px; min-width: 0; font-size: 0.66rem; color: #8b97ab; }
+.jstat__dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: rgb(var(--st)); box-shadow: 0 0 0 0 rgba(var(--st), 0.55); animation: jvPing 2.4s ease-out infinite; }
+.jstat[data-online='false'] .jstat__dot { background: #9aa6b8; animation: none; }
+.jstat b { font: 500 0.64rem var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--st)); }
+.jstat[data-online='false'] b { color: #c8d0dc; }
+.jstat__brain { font-size: 0.62rem; letter-spacing: 0.06em; color: #6f7d94; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* --- advanced AI settings (dock) ----------------------------------------- */
+.jprov { display: grid; gap: 4px; padding: 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); background: rgba(0, 0, 0, 0.18); max-height: 42vh; overflow: auto; }
+.jprov__note { margin: 0 2px 6px; font-size: 0.72rem; line-height: 1.45; color: #7d8aa0; }
+.jprov button {
+  all: unset; box-sizing: border-box; cursor: pointer;
+  display: grid; grid-template-columns: 10px auto minmax(0, 1fr); align-items: center; gap: 8px;
+  padding: 7px 9px; border-radius: 9px; font-size: 0.78rem; color: #c3cedd;
+}
+.jprov button:hover, .jprov button:focus-visible { background: rgba(255, 255, 255, 0.04); }
+.jprov button[aria-pressed='true'] { background: rgba(var(--st), 0.08); box-shadow: inset 2px 0 0 rgb(var(--st)); }
+.jprov i { width: 7px; height: 7px; border-radius: 50%; background: #3a4456; }
+.jprov button[data-ok='true'] i { background: #68e092; }
+.jprov em { font: normal 400 0.64rem var(--mono); color: #6f7d94; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jprov .jprov__rerun { display: block; margin-top: 4px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); color: #9aa8bd; font: 400 0.7rem var(--mono); }
+
+/* --- results, buttons, empty state inside the console -------------------- */
+.jres { display: grid; gap: 4px; margin-top: 8px; }
+.jres__row {
+  all: unset; box-sizing: border-box; cursor: pointer;
+  display: grid; grid-template-columns: 8px minmax(0, auto) minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 8px 10px; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02); transition: border-color 0.2s, background 0.2s;
+}
+.jres__row:hover, .jres__row:focus-visible { border-color: rgba(var(--st), 0.55); background: rgba(var(--st), 0.05); }
+.jres__ico { width: 8px; height: 8px; border-radius: 3px; background: hsl(var(--h, 200) 80% 62%); }
+.jres__row[data-type='section'] .jres__ico { background: none; border: 1px solid #7d8aa0; }
+.jres__row[data-type='project'] .jres__ico { background: #7c8cff; }
+.jres__row[data-type='lab'] .jres__ico { background: #54e2b8; border-radius: 50%; }
+.jres__row[data-type='history'] .jres__ico, .jres__row[data-type='command'] .jres__ico { background: none; border: 1px dashed #7d8aa0; border-radius: 50%; }
+.jres__t { font-size: 0.82rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jres__d { font-size: 0.7rem; color: #7d8aa0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jres__k { font-size: 0.56rem; letter-spacing: 0.1em; text-transform: uppercase; color: #56627a; }
+@media (max-width: 420px) { .jres__row { grid-template-columns: 8px minmax(0, 1fr) auto; } .jres__d { display: none; } }
+
+.jv2__btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.jv2__btns button { padding: 6px 12px; border: 1px solid rgba(var(--st), 0.45); border-radius: 9px; background: rgba(var(--st), 0.06); color: #e6eef8; font: 500 0.76rem var(--font); cursor: pointer; transition: background 0.2s; }
+.jv2__btns button:hover { background: rgba(var(--st), 0.14); }
+
+.jv2__empty { display: grid; gap: 4px; padding: 6px 2px; color: #7d8aa0; font-size: 0.8rem; line-height: 1.5; }
+.jv2__empty b { color: #dbe5f3; font-weight: 500; }
+.jv2__mic:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* --- command palette additions ------------------------------------------- */
+.cmdk__orb { width: 12px; height: 12px; flex: none; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d9f8ff, rgb(var(--st)) 60%); box-shadow: 0 0 12px rgba(var(--st), 0.5); }
+.cmdk__group { display: block; padding: 12px 12px 4px; font-size: 0.56rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
+.cmdk__row { position: relative; display: flex; align-items: center; border-radius: 10px; }
+.cmdk__row[data-active='true'] { background: var(--panel-strong); box-shadow: inset 2px 0 0 var(--accent); }
+.cmdk__list .cmdk__row > button:first-child { grid-template-columns: 22px minmax(0, auto) minmax(0, 1fr) auto auto; flex: 1; min-width: 0; }
+.cmdk__list .cmdk__row button[data-active] { background: none; box-shadow: none; }
+.cmdk__ico { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; color: var(--ink-2); background: var(--panel); }
+.cmdk__row[data-type='tool'] .cmdk__ico { color: hsl(var(--h, 200) 80% 64%); }
+.cmdk__row[data-type='ask'] .cmdk__ico { color: var(--accent); }
+.cmdk__row[data-type='project'] .cmdk__ico { color: var(--accent-2); }
+.cmdk__hint { justify-self: end; }
+.cmdk__list .cmdk__star {
+  all: unset; box-sizing: border-box; cursor: pointer; flex: none;
+  width: 30px; height: 30px; margin-right: 6px; display: grid; place-items: center;
+  border-radius: 8px; color: var(--ink-3); font-size: 0.9rem; opacity: 0.45; transition: opacity 0.2s, color 0.2s;
+}
+.cmdk__row:hover .cmdk__star, .cmdk__row[data-active='true'] .cmdk__star, .cmdk__star:focus-visible { opacity: 1; }
+.cmdk__list .cmdk__star[aria-pressed='true'] { color: #ffc466; opacity: 1; }
+.cmdk__foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--ink-3); }
+.cmdk__foot kbd { font: 400 0.58rem var(--mono); padding: 1px 5px; border: 1px solid var(--line); border-radius: 5px; }
+@media (max-width: 560px) {
+  .cmdk { padding-top: 8vh; }
+  .cmdk__list .cmdk__row > button:first-child { grid-template-columns: 22px minmax(0, 1fr) auto; }
+  .cmdk__hint { display: none; }
+  .cmdk__foot span:last-child { display: none; }
+}
+
+/* --- project highlight from J.A.R.V.I.S. / palette ------------------------ */
+.pcard[data-flash] .pcard__inner { box-shadow: 0 0 0 1px var(--accent), 0 0 0 6px var(--accent-glow); transition: box-shadow 0.4s var(--ease); }
+
+/* --- nav: the Vault entry is an action, not an anchor -------------------- */
+.nav__link[data-event] { color: var(--ink-3); }
+.nav__link[data-event]:hover { color: var(--ink); }

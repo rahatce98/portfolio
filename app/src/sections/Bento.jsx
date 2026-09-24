@@ -38,7 +38,7 @@ export default function Bento() {
       <div className="wrap">
         <div className="section-head" data-reveal>
           <div>
-            <span className="section-head__index">Command center</span>
+            <span className="section-head__index">04 — Rahat OS</span>
             <h2>
               Everything, one tap away<span className="dim">.</span>
             </h2>

@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useScrollTo } from '../hooks/useScroll';
 
-/* Global keyboard map + the floating J.A.R.V.I.S. orb.
+/* Global keyboard map. The floating J.A.R.V.I.S. orb lives in JarvisDock;
+   Ctrl/⌘ K and "/" belong to the command palette, Ctrl/⌘ J to the dock.
    Single-key shortcuts are ignored while typing in a field. */
 
 const MAP = [
   ['Navigate', [
-    ['Ctrl K', 'Command palette — tools & sections'],
-    ['/', 'Search the tool index'],
-    ['J', 'Talk to J.A.R.V.I.S.'],
-    ['G then H · A · T · P · L · C', 'Go to Home · About · Tools · Projects · Lab · Contact'],
+    ['Ctrl K', 'Command palette — search everything'],
+    ['/', 'Command palette (when not typing)'],
+    ['Ctrl J', 'J.A.R.V.I.S. from any page'],
+    ['J', 'J.A.R.V.I.S. (single key)'],
+    ['G then H · A · P · L · T · J · C', 'Home · Portfolio · Projects · Labs · Tools · J.A.R.V.I.S. · Contact'],
   ]],
   ['Act', [
     ['N', 'Add a tool (owner)'],
@@ -71,11 +73,6 @@ export default function Shortcuts() {
 
   return (
     <>
-      <button type="button" className="orb" onClick={() => window.dispatchEvent(new Event('rh-jarvis'))} aria-label="Open J.A.R.V.I.S. console (J)" title="J.A.R.V.I.S. — press J">
-        <span className="orb__core" />
-        <span className="orb__ring" />
-        <span className="orb__ring orb__ring--2" />
-      </button>
       <button type="button" className="keyhint mono" onClick={() => setOpen(true)} aria-label="Keyboard shortcuts">
         <kbd>?</kbd> keys
       </button>

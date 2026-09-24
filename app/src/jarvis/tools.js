@@ -1,22 +1,40 @@
 /* -----------------------------------------------------------------------------
- * Tool registry. Each tool:
+ * Command parser — the deterministic layer. Works with no AI model at all.
+ *
+ * Each tool:
  *   id, label, stage ('search' | 'execute'), help: [usage, description]
- *   match(s, raw) -> args | null      s = lower-cased, trimmed input
+ *   needsNet  true → refused with a clear message in offline mode
+ *   match(s, raw, ctx) -> args | null      s = lower-cased, trimmed input
  *   run(args, ctx) -> reply
- * A reply is { text, sources?, file?, list?, confirm?, summarize? }.
+ * A reply is { text, sources?, file?, list?, results?, buttons?, confirm?, summarize? }.
  *   confirm   { title, detail, yes: () => reply }  — the UI asks first
  *   summarize prompt for the model to turn raw data into an answer
- * Add a tool = add an object here. Nothing runs shell commands; side effects
- * are limited to opening tabs, downloads, clipboard, and the owner APIs.
+ *
+ * Anything that touches the site (navigate, open a tool/lab/project, theme,
+ * favourites, engineering maths…) is not done here: the tool resolves the
+ * words to a structured call and hands it to os/actions.js → execute(), the
+ * same validated door the palette and the language model use.
  * -------------------------------------------------------------------------- */
 
-import { webSearch, news, cryptoPrice, weather } from './web';
+import { news, cryptoPrice, weather } from './web';
 import { calc, looksLikeMath } from './calc';
 import { formatOf, FORMATS, specFor, parseJson, makeFile } from './files';
 import { remember, recall, forget, bridge, bridgeStatus, syncPending, BRIDGE_EDITOR } from './memory';
 import { parseBookmarks, pickFile, cleanUrl } from './bookmarks';
+import { parsePipe, parseConvert } from './engineering';
+import { execute } from '../os/actions';
+import { searchIndex, parseQuery } from '../os/searchIndex';
+import { sections, person, experience, education, contact } from '../data/site';
 
-const LABS = { rocket: 'rocket', car: 'auto', auto: 'auto', systems: 'systems', gear: 'systems', pipe: 'pipe', sewer: 'pipe', beam: 'beam', engine: 'engine', turbofan: 'engine', jet: 'engine' };
+const LABS = { rocket: 'rocket', car: 'auto', auto: 'auto', systems: 'systems', gear: 'systems', pipe: 'pipe', sewer: 'pipe', hydraulics: 'pipe', beam: 'beam', engine: 'engine', turbofan: 'engine', jet: 'engine' };
+const act = (tool, args = {}) => (a, ctx) => execute({ tool, arguments: typeof args === 'function' ? args(a) : args }, ctx);
+
+/** "projects", "the tools", "engineering labs", "jarvis" → a section, or null. */
+function sectionOf(q) {
+  const s = q.toLowerCase().replace(/^(the|my)\s+/, '').replace(/\s+(section|page|tab)$/, '').replace(/\./g, '').trim();
+  if (!s) return null;
+  return sections.find((x) => x.id === s || x.label.toLowerCase().replace(/\./g, '') === s || (x.aliases || []).includes(s)) || null;
+}
 const fmt = (n, d = 2) => Number(n).toLocaleString('en-US', { maximumFractionDigits: d });
 const NOTES = 'rh-jv-notes';
 const notes = {
@@ -54,21 +72,39 @@ export const TOOLS = [
   {
     id: 'lab', label: 'Lab', stage: 'execute', help: ['lab <name>', 'engine · rocket · car · systems · pipe · beam'],
     match: (s) => {
-      const m = s.match(/^(?:lab|open lab|show lab|simulate)\s+(.+)$/) || s.match(/^(rocket|car|systems|pipe|beam|engine|turbofan|jet)$/);
+      const m = s.match(/^(?:lab|open lab|show lab|open the|simulate)\s+(.+?)(?:\s+lab)?$/) || s.match(/^(?:open\s+)?(rocket|car|systems|pipe|beam|engine|turbofan|jet|sewer hydraulics|hydraulics)(?:\s+lab)?$/);
       const k = m && Object.keys(LABS).find((x) => m[1].includes(x));
-      return k ? { lab: LABS[k] } : null;
+      return k ? { id: LABS[k] } : null;
     },
-    run: ({ lab }) => (window.dispatchEvent(new CustomEvent('rh-lab', { detail: lab })), { text: `Loading the ${lab === 'auto' ? 'automotive' : lab} lab. Esc brings you back.` }),
+    run: act('openLab', ({ id }) => ({ id })),
   },
   {
-    id: 'theme', label: 'Theme', stage: 'execute', help: ['theme', 'toggle light / dark'],
-    match: (s) => (/^(theme|dark mode|light mode|toggle theme)$/.test(s) ? {} : null),
-    run: () => (window.dispatchEvent(new Event('rh-theme')), { text: 'Theme switched.' }),
+    id: 'theme', label: 'Theme', stage: 'execute', help: ['theme · light mode · dark mode', 'colour theme'],
+    match: (s) => {
+      const m = s.match(/^(?:switch to |use |set )?(?:the )?(light|dark)(?: mode| theme)?$/) || s.match(/^(theme|toggle theme|switch theme|change theme)$/);
+      return m ? { mode: m[1] === 'light' || m[1] === 'dark' ? m[1] : 'toggle' } : null;
+    },
+    run: act('setTheme', ({ mode }) => ({ mode })),
+  },
+  {
+    id: 'motion', label: 'Motion', stage: 'execute', help: ['reduce motion · restore motion', 'calm animations on this device'],
+    match: (s) => (/^(reduce(d)? motion( on)?|less motion|stop animations?|animations? off|calm mode)$/.test(s) ? { mode: 'reduce' } : /^(restore|normal|full) motion$|^(reduce(d)? motion off|animations? on)$/.test(s) ? { mode: 'system' } : null),
+    run: act('setMotion', ({ mode }) => ({ mode })),
   },
   {
     id: 'vault', label: 'Vault', stage: 'execute', help: ['vault', 'encrypted passwords & codes'],
-    match: (s) => (/^(vault|open vault|passwords?)$/.test(s) ? {} : null),
-    run: () => (window.dispatchEvent(new Event('rh-vault')), { text: 'Opening the vault. Your master password never leaves this device.' }),
+    match: (s) => (/^(vault|open (the )?vault|passwords?|go to vault)$/.test(s) ? {} : null),
+    run: act('openVault'),
+  },
+  {
+    id: 'install', label: 'Install', stage: 'execute', help: ['install app', 'add Rahat OS to this device'],
+    match: (s) => (/^install( (the )?(app|rahat os|pwa))?$/.test(s) ? {} : null),
+    run: act('installApp'),
+  },
+  {
+    id: 'palette', label: 'Palette', stage: 'execute', help: ['palette', 'open the command palette'],
+    match: (s) => (/^((open )?(the )?(command )?palette|shortcuts|keyboard shortcuts|keys)$/.test(s) ? { keys: /short|key/.test(s) } : null),
+    run: ({ keys }, ctx) => execute({ tool: keys ? 'showShortcuts' : 'openPalette', arguments: {} }, ctx),
   },
   {
     id: 'unlock', label: 'Owner', stage: 'execute', help: ['unlock', 'owner mode (PIN)'],
@@ -76,13 +112,57 @@ export const TOOLS = [
     run: (a, ctx) => (ctx.scrollTo('tools'), setTimeout(() => window.dispatchEvent(new Event('rh-unlock')), 400), { text: 'Owner PIN requested — enter it in the Tools panel.' }),
   },
   {
-    id: 'go', label: 'Navigate', stage: 'execute', help: ['go <section>', 'tools · projects · lab · contact'],
-    match: (s, raw, ctx) => {
-      const m = s.match(/^(?:go|goto|go to|show|scroll to|take me to)\s+(.+)$/);
-      const sec = m && ctx.sections.find((x) => x.label.toLowerCase().startsWith(m[1]) || x.id.startsWith(m[1]));
-      return sec ? { sec } : null;
+    id: 'go', label: 'Navigate', stage: 'execute', help: ['go to <section>', 'portfolio · projects · labs · tools · contact'],
+    match: (s) => {
+      // Longest verbs first: with "go|go to", "go to projects" would leave "to projects".
+      const m = s.match(/^(?:take me to|navigate to|scroll to|jump to|go to|goto|show me|show|open|go)\s+(.+)$/) || s.match(/^(portfolio|projects|labs|tools|contact|about|home|jarvis)$/);
+      const sec = m && sectionOf(m[1]);
+      return sec ? { section: sec.id } : null;
     },
-    run: ({ sec }, ctx) => (ctx.scrollTo(sec.id), { text: `${sec.label}.` }),
+    run: act('navigate', ({ section }) => ({ section })),
+  },
+  {
+    id: 'showtools', label: 'Tools', stage: 'execute', help: ['show my tools', 'the tool index'],
+    match: (s) => (/^(show |list |open )?(me )?(my |all )?tools( index)?$/.test(s) && s !== 'tools' ? {} : null),
+    run: act('showTools'),
+  },
+  {
+    id: 'favorites', label: 'Quick tools', stage: 'execute', help: ['quick tools · favorite <tool>', 'your starred tools'],
+    match: (s, raw, ctx) => {
+      if (/^((show |list )?(my )?(quick tools|favou?rites|starred( tools)?|pinned( tools)?))$/.test(s)) return { list: true };
+      const m = s.match(/^(?:favou?rite|star|pin|unfavou?rite|unstar|unpin|add)\s+(.+?)(?:\s+to (?:my )?(?:favou?rites|quick tools))?$/);
+      if (!m || (/^add\s/.test(s) && !/(favou?rites|quick tools)$/.test(s))) return null;
+      const hit = searchIndex(ctx.index, parseQuery(m[1]).terms || m[1], { typeHint: 'tool' }).find((h) => h.type === 'tool');
+      return hit ? { id: hit.id } : null;
+    },
+    run: ({ list, id }, ctx) => execute(list ? { tool: 'showFavorites', arguments: {} } : { tool: 'toggleFavorite', arguments: { id } }, ctx),
+  },
+  {
+    id: 'history', label: 'History', stage: 'execute', help: ['history · clear history', 'recent commands'],
+    match: (s) => (/^(history|recent|recent commands|command history|show history)$/.test(s) ? {} : /^clear (command )?history$/.test(s) ? { clear: true } : null),
+    run: ({ clear }, ctx) => execute({ tool: clear ? 'clearHistory' : 'showHistory', arguments: {} }, ctx),
+  },
+
+  /* ------------------------------------------------------- engineering --- */
+  {
+    id: 'pipe', label: 'Pipe hydraulics', stage: 'execute', help: ['velocity for 300 mm pipe at 40 L/s', 'pipe velocity · Manning capacity (“400 mm at 0.5% slope”)'],
+    match: (s, raw, ctx) =>
+      parsePipe(s, ctx.context?.selectedTool?.id === 'pipe' ? ctx.context.selectedTool.inputs : null) ||
+      (/\b(calc|calculate|compute)\b.*\b(pipe|velocity|manning|discharge)\b/.test(s) && !/\d/.test(s) ? { incomplete: true } : null),
+    run: (call, ctx) =>
+      call.incomplete
+        ? {
+            text: 'Give me the pipe and the flow (or slope), for example:',
+            results: ['velocity for 300 mm pipe at 40 L/s', 'capacity of 400 mm pipe at 0.5% slope', 'manning 450 mm rcc slope 1 in 250 60% full'].map((t) => ({ key: t, type: 'command', title: t, desc: 'run', rerun: t })),
+            buttons: [{ label: 'Open Sewer Hydraulics lab', action: { tool: 'openLab', arguments: { id: 'pipe' } } }],
+            show: true,
+          }
+        : execute(call, ctx),
+  },
+  {
+    id: 'convert', label: 'Units', stage: 'execute', help: ['convert 25 psi to kpa', 'length · area · flow · pressure · force · katha/bigha'],
+    match: (s) => parseConvert(s),
+    run: act('convertUnits', (a) => a),
   },
 
   /* ----------------------------------------------------------- utility --- */
@@ -120,7 +200,7 @@ export const TOOLS = [
     },
   },
   {
-    id: 'weather', label: 'Weather', stage: 'search', help: ['weather <city>', 'live conditions + 3-day outlook'],
+    id: 'weather', label: 'Weather', stage: 'search', needsNet: true, help: ['weather <city>', 'live conditions + 3-day outlook'],
     match: (s) => {
       const m = s.match(/(?:weather|temperature|forecast|raining|rain)(?:\s+(?:in|at|for))?\s*([a-z .'-]*)\??$/);
       return m ? { place: m[1].replace(/\b(today|now|tomorrow|like)\b/g, '').trim() || 'Dhaka' } : null;
@@ -132,7 +212,7 @@ export const TOOLS = [
     },
   },
   {
-    id: 'price', label: 'Crypto price', stage: 'search', help: ['price <coin>', 'live price from CoinGecko'],
+    id: 'price', label: 'Crypto price', stage: 'search', needsNet: true, help: ['price <coin>', 'live price from CoinGecko'],
     match: (s) => {
       const m = s.match(/([a-z0-9-]+)\s+(?:price|usd|to usd)\??$/) || s.match(/(?:price|value) (?:of|for)\s+([a-z0-9-]+)(?: today| now)?\??$/) || s.match(/^price\s+([a-z0-9-]+)$/) || s.match(/^how much is (?:one |1 )?([a-z0-9-]+)(?: worth)?\??$/);
       return m && !/^(the|current|a|share|stock)$/.test(m[1]) ? { coin: m[1] } : null;
@@ -144,7 +224,7 @@ export const TOOLS = [
     },
   },
   {
-    id: 'news', label: 'News', stage: 'search', help: ['news [topic]', 'last 24 h headlines, summarised'],
+    id: 'news', label: 'News', stage: 'search', needsNet: true, help: ['news [topic]', 'last 24 h headlines, summarised'],
     match: (s) => {
       const m = s.match(/^(?:search |show |get |latest |today'?s? )*(?:the )?(?:latest |today'?s? |top )*(?:news|headlines)(?:\s+(?:about|on|for|in))?\s*(.*?)(?: today)?\??$/);
       return m ? { topic: m[1].trim() } : null;
@@ -159,7 +239,7 @@ export const TOOLS = [
     },
   },
   {
-    id: 'youtube', label: 'YouTube', stage: 'execute', help: ['youtube <query>', 'search YouTube'],
+    id: 'youtube', label: 'YouTube', stage: 'execute', needsNet: true, help: ['youtube <query>', 'search YouTube'],
     match: (s, raw) => {
       const m = raw.match(/^(?:youtube|yt|search youtube for|find on youtube|play)\s+(.+)$/i) || raw.match(/^(.+?)\s+on youtube$/i);
       return m ? { q: m[1] } : null;
@@ -167,7 +247,7 @@ export const TOOLS = [
     run: ({ q }) => (openTab(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`), { text: `YouTube results for “${q}” are open.` }),
   },
   {
-    id: 'google', label: 'Google', stage: 'execute', help: ['google <query>', 'open a Google search tab'],
+    id: 'google', label: 'Google', stage: 'execute', needsNet: true, help: ['google <query>', 'open a Google search tab'],
     match: (s, raw) => {
       const m = raw.match(/^(?:google|search google for|open google for)\s+(.+)$/i);
       return m ? { q: m[1] } : null;
@@ -185,22 +265,52 @@ export const TOOLS = [
     run: ({ url }) => confirmOpen(url, 'Open this link?'),
   },
   {
-    id: 'search', label: 'Web search', stage: 'search', help: ['search <anything>', 'DuckDuckGo + Wikipedia, summarised'],
+    // "who is Rahat?" on Rahat's own site is answered from the portfolio, not Wikipedia.
+    id: 'about', label: 'About Rahat', stage: 'execute', help: ['who is Rahat?', 'the portfolio in one answer'],
+    match: (s) => (/^(who(?:'s| is)|tell me about|about|what does)\s+(md\.?\s+)?(rahat|rahat hossain|the owner|your (owner|creator)|you work for)(\s+hossain)?(\s+do)?\??$/.test(s) || /^(who made this|whose (site|portfolio) is this)\??$/.test(s) ? {} : null),
+    run: (a, ctx) => {
+      const [job] = experience;
+      return {
+        text: `**${person.name}** — ${person.role}, ${person.location}. ${person.tagline}`,
+        list: [`${job.role}, ${job.org} (${job.period})`, ...education.map((e) => `${e.degree} — ${e.school}`), `Contact: ${contact.email}`],
+        buttons: [
+          { label: 'Portfolio', action: { tool: 'navigate', arguments: { section: 'explore' } } },
+          { label: 'Projects', action: { tool: 'navigate', arguments: { section: 'projects' } } },
+          { label: 'Contact', action: { tool: 'navigate', arguments: { section: 'contact' } } },
+        ],
+        show: true,
+      };
+    },
+  },
+  {
+    id: 'search', label: 'Web search', stage: 'search', needsNet: true, help: ['search the web for <anything>', 'DuckDuckGo + Wikipedia, summarised'],
     match: (s, raw) => {
-      const m = raw.match(/^(?:search(?: the web)?(?: for)?|look up|lookup|find(?: me)?(?: the)?|who is|who was|what is|what are|tell me about|define)\s+(.+?)\??$/i);
+      const m = raw.match(/^(?:search (?:the )?(?:web|internet|online)(?: for)?|web search(?: for)?|look up|lookup|who is|who was|what is|what are|tell me about|define)\s+(.+?)\??$/i);
+      return m && !looksLikeMath(m[1]) ? { q: m[1], ask: raw } : null;
+    },
+    run: ({ q, ask }, ctx) => execute({ tool: 'webSearch', arguments: { query: q, question: ask } }, ctx),
+  },
+  {
+    // "search DSIP", "find the rfi", "show my DSIP project", "where is the beam lab"
+    // → this site's index first; the web only when nothing here matches.
+    id: 'find', label: 'Site search', stage: 'search', help: ['search <words> · show my <x> project', 'projects, tools, labs & sections — then the web'],
+    match: (s, raw) => {
+      const m = raw.match(/^(?:search(?: for)?|find(?: me)?|where(?:'s| is)|locate|show(?: me)?(?: my)?(?= .*\b(?:project|tool|lab)s?\b))\s+(.+?)\??$/i);
       return m ? { q: m[1], ask: raw } : null;
     },
     run: async ({ q, ask }, ctx) => {
-      const tool = ctx.tools.map((t) => ({ t, sc: ctx.score(t, q) })).filter((x) => x.sc > 2).sort((a, b) => b.sc - a.sc)[0];
-      const r = await webSearch(q);
-      if (!r.length && tool) return { text: `Top match in your index: ${tool.t.name}.`, sources: [{ title: tool.t.name, url: tool.t.url }] };
-      if (!r.length) return { text: `No free source had “${q}”.`, confirm: { title: 'Search Google instead?', detail: q, yes: () => (openTab(`https://www.google.com/search?q=${encodeURIComponent(q)}`), { text: 'Google is open.' }) } };
-      const src = tool ? [{ title: `${tool.t.name} (your index)`, url: tool.t.url }, ...r] : r;
-      return {
-        text: `${r.length} results.`,
-        sources: src.slice(0, 6),
-        summarize: `Question: ${ask}\nAnswer in 2-5 sentences from these search results only. If a result is the official site or documentation, name it.\n` + r.map((x, i) => `[${i + 1}] ${x.title} — ${x.snippet} (${x.url})`).join('\n'),
-      };
+      const local = await execute({ tool: 'searchSite', arguments: { query: ask } }, ctx);
+      // "show my DSIP project": a named type whose best hit is that type → open it.
+      const { typeHint } = parseQuery(ask);
+      const top = local?.results?.[0];
+      if (typeHint && top?.type === typeHint && /^(show|open|pull up|bring up)\b/i.test(ask)) {
+        const opened = await execute(top.action, ctx);
+        const rest = local.results.slice(1, 5);
+        return rest.length ? { ...opened, results: rest, list: [...(opened.list || []), 'Also matching:'] } : opened;
+      }
+      if (local) return local;
+      if (!ctx.context?.online) return { text: `Nothing on this site matches “${q}”, and web search needs the internet (offline mode).`, error: true };
+      return execute({ tool: 'webSearch', arguments: { query: q, question: ask } }, ctx);
     },
   },
   {
@@ -409,26 +519,32 @@ export const TOOLS = [
     },
   },
 
-  /* ------------------------------------------------ open an indexed tool --- */
+  /* ------------------------------------------ open anything in the index --- */
   {
-    id: 'open', label: 'Open tool', stage: 'execute', help: ['open <tool>', 'launch anything in the index'],
+    id: 'open', label: 'Open', stage: 'execute', help: ['open <tool | project | lab>', 'launch anything in the index'],
     match: (s, raw, ctx) => {
-      const m = s.match(/^(?:open|launch|run|start)\s+(.+)$/);
-      const q = m ? m[1] : s.split(/\s+/).length <= 3 ? s : null;
-      if (!q) return null;
-      const hit = ctx.tools.map((t) => ({ t, sc: ctx.score(t, q) })).filter((x) => x.sc > (m ? 0 : 3)).sort((a, b) => b.sc - a.sc)[0];
-      return hit ? { t: hit.t } : null;
+      const m = s.match(/^(?:open|launch|run|start|pull up|bring up)\s+(.+)$/);
+      if (m) {
+        const { terms, typeHint } = parseQuery(m[1]);
+        const hit = searchIndex(ctx.index, terms || m[1], { context: ctx.context, pins: ctx.pins, typeHint, limit: 5 }).find((h) => h.type !== 'command');
+        return hit ? { call: hit.action } : null;
+      }
+      // Bare words ("rfi", "dsip tracker") open a tool only on a strong title match.
+      if (s.split(/\s+/).length > 3) return null;
+      const hit = searchIndex(ctx.index, s, { context: ctx.context, pins: ctx.pins, limit: 3 }).find((h) => h.type === 'tool' && h.score > 4);
+      return hit ? { call: hit.action } : null;
     },
-    run: ({ t }, ctx) => (ctx.trackOpen(t.id), openTab(t.url), { text: `Launching ${t.name}.` }),
+    run: ({ call }, ctx) => execute(call, ctx),
   },
 ];
 
 /** Read-only tools the model itself may call mid-conversation. */
 export const MODEL_CALLABLE = ['weather', 'price', 'news', 'search', 'calc', 'time'];
 
-// Match order: explicit verbs first, loose keyword matchers (weather, price,
-// news, search) after, the fuzzy tool opener last.
-const ORDER = ['help', 'setup', 'aikey', 'notion', 'remember', 'recall', 'notes', 'bookmark-import', 'bookmark-add', 'bookmark-list', 'file', 'clipboard', 'lab', 'theme', 'vault', 'unlock', 'go', 'youtube', 'google', 'openurl', 'calc', 'time', 'price', 'weather', 'news', 'search', 'open'];
+// Match order: explicit verbs first, specific parsers (engineering, units)
+// before the generic calculator, loose keyword matchers (weather, price, news,
+// search) after, the fuzzy opener last.
+const ORDER = ['help', 'setup', 'aikey', 'notion', 'remember', 'recall', 'notes', 'bookmark-import', 'bookmark-add', 'bookmark-list', 'file', 'clipboard', 'history', 'favorites', 'install', 'palette', 'motion', 'lab', 'theme', 'vault', 'unlock', 'showtools', 'go', 'youtube', 'google', 'openurl', 'pipe', 'convert', 'calc', 'time', 'price', 'weather', 'news', 'about', 'search', 'find', 'open'];
 const SORTED = ORDER.map((id) => TOOLS.find((t) => t.id === id)).concat(TOOLS.filter((t) => !ORDER.includes(t.id)));
 
 export function route(raw, ctx) {

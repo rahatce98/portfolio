@@ -174,6 +174,7 @@ export const projectCategories = [
 export const projects = [
   {
     title: 'WD6B Dynamic Progress Tracker',
+    keywords: ['DSIP', 'DSIP-WD6B', 'sewer', 'progress', 'tracker'],
     category: 'Project Monitoring',
     badge: 'Engineering Tool',
     art: 'grid',
@@ -291,14 +292,25 @@ export const seo = {
   canonical: 'https://rahatce98.github.io/portfolio/',
 };
 
-/** Section registry — drives the nav, the scroll-spy and the section order. */
+/**
+ * Section registry — drives the nav, the rail, the scroll-spy, the command
+ * palette and J.A.R.V.I.S. "go to …". Order = page order.
+ *   nav: false   kept out of the top bar (still in the rail, drawer, palette)
+ *   event        not a scroll section — opening it dispatches this event
+ *   aliases      extra words the palette and the command parser accept
+ */
 export const sections = [
-  { id: 'home', index: '00', label: 'Home' },
-  { id: 'explore', index: '01', label: 'About' },
-  { id: 'jarvis', index: '02', label: 'Jarvis' },
-  { id: 'tools', index: '03', label: 'Tools' },
-  { id: 'projects', index: '04', label: 'Projects' },
-  { id: 'technology', index: '05', label: 'Learning' },
-  { id: 'lab', index: '06', label: 'Lab' },
-  { id: 'contact', index: '07', label: 'Contact' },
+  { id: 'home', index: '00', label: 'Home', nav: false, aliases: ['top', 'start', 'hero'] },
+  { id: 'explore', index: '01', label: 'Portfolio', aliases: ['about', 'profile', 'bio', 'experience', 'skills'] },
+  { id: 'projects', index: '02', label: 'Projects', aliases: ['work', 'portfolio projects', 'case studies'] },
+  { id: 'technology', index: '03', label: 'Learning', nav: false, aliases: ['technology', 'now', 'learning lab'] },
+  { id: 'command', index: '04', label: 'Rahat OS', nav: false, aliases: ['command center', 'dashboard', 'bento'] },
+  { id: 'lab', index: '05', label: 'Labs', aliases: ['engineering labs', 'lab', 'simulations', '3d'] },
+  { id: 'tools', index: '06', label: 'Tools', aliases: ['tool index', 'launcher', 'apps'] },
+  { id: 'jarvis', index: '07', label: 'J.A.R.V.I.S.', aliases: ['jarvis', 'assistant', 'console', 'ai'] },
+  { id: 'vault', label: 'Vault', event: 'rh-vault', aliases: ['passwords', 'codes'] },
+  { id: 'contact', index: '08', label: 'Contact', aliases: ['email', 'hire', 'whatsapp', 'reach'] },
 ];
+
+/** Sections that exist in the page (everything except event-only entries). */
+export const pageSections = sections.filter((s) => !s.event);
