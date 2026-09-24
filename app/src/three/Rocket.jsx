@@ -98,10 +98,30 @@ function Fins({ y, bodyR }) {
  * particle system, so it costs three draw calls and animates on the GPU-side
  * transform only.
  */
-function Plume({ throttleRef, y }) {
+/* Super-heavy boost adds: a wider blue-white sheath, a Mach-disk ring that
+   pulses off the nozzle, a spray of sparks and a much brighter light. */
+const SPARKS = 90;
+function Plume({ throttleRef, boostRef, y }) {
   const inner = useRef();
   const outer = useRef();
   const diamonds = useRef();
+  const sheath = useRef();
+  const mach = useRef();
+  const sparks = useRef();
+  const light = useRef();
+  const sparkGeo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    const p = new Float32Array(SPARKS * 3);
+    const seed = new Float32Array(SPARKS);
+    for (let i = 0; i < SPARKS; i++) seed[i] = (Math.sin(i * 91.7) * 43758.5453) % 1;
+    g.setAttribute('position', new THREE.BufferAttribute(p, 3));
+    g.userData.seed = seed;
+    return g;
+  }, []);
+  const sheathMat = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: new THREE.Color('#7fc8ff'), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }),
+    []
+  );
 
   const innerMat = useMemo(
     () => new THREE.MeshBasicMaterial({ color: new THREE.Color('#cfefff'), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }),
@@ -113,7 +133,8 @@ function Plume({ throttleRef, y }) {
   );
 
   useFrame((state) => {
-    const t = throttleRef.current;
+    const b = boostRef?.current || 0; // 0 → 1, super-heavy mode
+    const t = throttleRef.current * (1 + b * 1.4);
     const time = state.clock.elapsedTime;
     // Flicker is deterministic noise, not Math.random, so the flame reads as
     // turbulent rather than as strobing.
@@ -130,6 +151,33 @@ function Plume({ throttleRef, y }) {
       diamonds.current.visible = t > 0.55;
       diamonds.current.scale.setScalar(t * flick);
     }
+    if (sheath.current) {
+      sheath.current.visible = b > 0.02;
+      sheath.current.scale.set(1 + b * 0.5 * flick, (1 + b * 1.6) * flick, 1 + b * 0.5 * flick);
+      sheathMat.opacity = 0.34 * b;
+    }
+    if (mach.current) {
+      const k = (time * 2.4) % 1;
+      mach.current.visible = b > 0.05;
+      mach.current.scale.setScalar(0.6 + k * 2.6 * (0.6 + b * 0.6));
+      mach.current.material.opacity = (1 - k) * 0.55 * b;
+    }
+    if (sparks.current) {
+      sparks.current.visible = b > 0.05;
+      const pos = sparkGeo.attributes.position.array;
+      const seed = sparkGeo.userData.seed;
+      for (let i = 0; i < SPARKS; i++) {
+        const u = (time * (0.9 + Math.abs(seed[i]) * 1.2) + Math.abs(seed[i]) * 7) % 1;
+        const a = seed[i] * 40 + time * 3;
+        const r = 0.2 + u * (0.9 + b * 1.6);
+        pos[i * 3] = Math.cos(a) * r;
+        pos[i * 3 + 1] = -0.6 - u * (4 + b * 5);
+        pos[i * 3 + 2] = Math.sin(a) * r;
+      }
+      sparkGeo.attributes.position.needsUpdate = true;
+      sparks.current.material.opacity = 0.9 * b;
+    }
+    if (light.current) light.current.intensity = 26 * (1 + b * 3.5) * Math.min(1, throttleRef.current * 1.4);
   });
 
   return (
@@ -147,8 +195,19 @@ function Plume({ throttleRef, y }) {
           </mesh>
         ))}
       </group>
+      {/* super-heavy sheath, Mach disk and sparks */}
+      <mesh ref={sheath} material={sheathMat} position={[0, -2.2, 0]}>
+        <coneGeometry args={[0.95, 4.6, 24, 1, true]} />
+      </mesh>
+      <mesh ref={mach} position={[0, -0.35, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.5, 0.05, 8, 40]} />
+        <meshBasicMaterial color="#bfe6ff" transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <points ref={sparks} geometry={sparkGeo}>
+        <pointsMaterial color="#ffd27a" size={0.07} transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </points>
       {/* Light cast by the flame onto the engine bay above it. */}
-      <pointLight position={[0, -0.6, 0]} color="#ff8a1e" intensity={26} distance={7} decay={2} />
+      <pointLight ref={light} position={[0, -0.6, 0]} color="#ff8a1e" intensity={26} distance={9} decay={2} />
     </group>
   );
 }
@@ -247,6 +306,7 @@ function Part({ def, explodeRef, selected, onSelect, showLabels, children }) {
 export default function Rocket({
   explodeRef,
   throttleRef,
+  boostRef,
   spinRef,
   selected,
   onSelect,
@@ -279,6 +339,12 @@ export default function Rocket({
     g.rotation.x = THREE.MathUtils.lerp(g.rotation.x, spinRef?.current.x ?? 0, 1 - Math.pow(0.002, dt));
     // Idle bob keeps the silhouette alive when nothing is selected.
     g.position.y = reduced ? 0 : Math.sin(state.clock.elapsedTime * 0.6) * 0.06;
+    const b = boostRef?.current || 0;
+    if (b > 0.01 && !reduced) {
+      const tt = state.clock.elapsedTime;
+      g.position.x = (Math.sin(tt * 73) + Math.sin(tt * 51.3)) * 0.012 * b;
+      g.position.z = (Math.sin(tt * 67.1) + Math.sin(tt * 43.7)) * 0.012 * b;
+    } else g.position.x = g.position.z = 0;
   });
 
   const common = { explodeRef, selected, onSelect, showLabels };
@@ -355,7 +421,7 @@ export default function Rocket({
             <torusGeometry args={[0.24 + d * 0.34, 0.017, 6, 30]} />
           </mesh>
         ))}
-        <Plume throttleRef={throttleRef} y={-2.75} />
+        <Plume throttleRef={throttleRef} boostRef={boostRef} y={-2.75} />
       </Part>
 
       {/* ---- 06 internal components ----------------------------------------

@@ -367,8 +367,8 @@ export default function JarvisHUD({ overlay = false, onClose }) {
           <button type="button" className="hud-ib" aria-pressed={j.speak} onClick={() => j.toggleVoice(!j.speak)} title={j.speak ? 'Spoken replies on' : 'Spoken replies off'} aria-label="Spoken replies">
             <Ico d={j.speak ? 'M11 5 6 9H3v6h3l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13' : 'M11 5 6 9H3v6h3l5 4zM22 9l-6 6M16 9l6 6'} />
           </button>
-          <button type="button" className="hud-ib hud-ib--txt mono" aria-pressed={j.lang === 'bn-BD'} onClick={() => j.setLang(j.lang === 'bn-BD' ? 'en-US' : 'bn-BD')} title="Speech language">
-            {j.lang === 'bn-BD' ? 'বাং' : 'EN'}
+          <button type="button" className="hud-ib hud-ib--txt mono" aria-pressed={j.lang !== 'en-US'} onClick={j.cycleLang} title="Speech language: AUTO (Bangla · English · Hindi) → EN → বাং → हिं">
+            {j.langLabel}
           </button>
           {overlay ? (
             <button type="button" className="hud-ib" onClick={onClose} title="Close (Esc)" aria-label="Close command center">

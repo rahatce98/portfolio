@@ -11,10 +11,10 @@
  *          detector and transcribes with Whisper on Groq (owner key needed).
  * -------------------------------------------------------------------------- */
 
-import { transcribe } from './brain';
-import { getKey } from './keys';
+import { transcribe, canTranscribe } from './brain';
 
-const BN = /[ঀ-৿]/;
+const BN = /[\u0980-\u09FF]/;
+const HI = /[\u0900-\u097F]/;
 export const WAKE = /(?<![a-zঀ-৿])(?:(?:hey|hi|ok|okay|yo|এই|হেই)\s+)?(?:jarvis|jervis|jarvi|javis|জার্ভিস|জারভিস|জার্ভিশ)(?![a-zঀ-৿])[\s,.!?:।-]*/i;
 
 export const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -22,9 +22,10 @@ const SR = typeof window !== 'undefined' ? window.SpeechRecognition || window.we
 export const canRecognise = !!SR;
 export const canRecord = typeof window !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== 'undefined';
 
-function pickVoice(bn) {
+function pickVoice(script) {
   const v = speechSynthesis.getVoices();
-  if (bn) return v.find((x) => /^bn/i.test(x.lang) && /natural|online/i.test(x.name)) || v.find((x) => /^bn/i.test(x.lang)) || null;
+  if (script === 'bn') return v.find((x) => /^bn/i.test(x.lang) && /natural|online/i.test(x.name)) || v.find((x) => /^bn/i.test(x.lang)) || null;
+  if (script === 'hi') return v.find((x) => /^hi/i.test(x.lang) && /natural|online/i.test(x.name)) || v.find((x) => /^hi/i.test(x.lang)) || null;
   return (
     v.find((x) => /en-GB/i.test(x.lang) && /natural|online/i.test(x.name) && /ryan|thomas|oliver|male/i.test(x.name)) ||
     v.find((x) => /^en/i.test(x.lang) && /natural|online/i.test(x.name) && /guy|andrew|brian|davis|ryan|christopher|eric/i.test(x.name)) ||
@@ -80,13 +81,13 @@ export class Speaker {
     if (!queued) this.cancel();
     const t = clean(text).slice(0, 900);
     if (!t) return;
-    const bn = BN.test(t);
+    const script = BN.test(t) ? 'bn' : HI.test(t) ? 'hi' : 'en';
     const u = new SpeechSynthesisUtterance(t);
-    const v = pickVoice(bn);
+    const v = pickVoice(script);
     if (v) u.voice = v;
-    u.lang = v?.lang || (bn ? 'bn-BD' : 'en-GB');
-    u.rate = bn ? 1 : 1.04;
-    u.pitch = bn ? 1 : 0.94;
+    u.lang = v?.lang || { bn: 'bn-BD', hi: 'hi-IN', en: 'en-GB' }[script];
+    u.rate = script === 'en' ? 1.04 : 1;
+    u.pitch = script === 'en' ? 0.94 : 1;
     this.pending++;
     u.onstart = () => this.onStart?.();
     u.onboundary = () => this.onLevel?.(0.55 + Math.random() * 0.35);
@@ -128,8 +129,13 @@ export class Listener {
     this.fails = 0;
   }
 
+  /* 'auto' language = Whisper (understands Bangla, English, Hindi and mixed
+     speech without choosing). Fixed languages use the browser's recogniser,
+     which streams words live. */
   get engine() {
-    return canRecognise ? 'browser' : canRecord && getKey('groq') ? 'whisper' : null;
+    const whisper = canRecord && canTranscribe();
+    if (this.lang === 'auto' && whisper) return 'whisper';
+    return canRecognise ? 'browser' : whisper ? 'whisper' : null;
   }
 
   wake(ms = 9000) {
@@ -199,22 +205,52 @@ export class Listener {
 
   startBrowser() {
     const r = new SR();
-    r.lang = this.lang;
+    r.lang = this.lang === 'auto' ? navigator.language || 'en-US' : this.lang;
     r.interimResults = true;
     r.continuous = this.hands;
     r.maxAlternatives = 1;
     let finalText = '';
+    let pending = ''; // interim words not yet finalised
+    let quiet = 0;
+    // Some browsers (Edge, Android) are slow to mark a phrase final, or end
+    // the session without doing so. A short pause counts as the end of the
+    // sentence, so a spoken command is always sent — no button press.
+    const commit = () => {
+      clearTimeout(quiet);
+      const t = pending.trim();
+      pending = '';
+      if (t) {
+        finalText = t;
+        this.handle(t);
+      }
+    };
     r.onresult = (e) => {
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const x = e.results[i];
         if (x.isFinal) {
+          clearTimeout(quiet);
+          pending = '';
           finalText = x[0].transcript;
           this.handle(finalText);
         } else interim += x[0].transcript;
       }
       this.fails = 0;
-      if (interim) this.h.onInterim(interim);
+      if (interim) {
+        pending = interim;
+        this.h.onInterim(interim);
+        clearTimeout(quiet);
+        quiet = setTimeout(() => {
+          commit();
+          if (!this.hands) {
+            try {
+              r.stop();
+            } catch {
+              /* already stopped */
+            }
+          }
+        }, 1300);
+      }
     };
     r.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
@@ -225,12 +261,13 @@ export class Listener {
       else if (e.error === 'language-not-supported') this.h.onError?.(`This browser can't recognise ${this.lang}.`);
     };
     r.onend = () => {
+      if (pending) commit();
       this.alive = false;
       this.rec = null;
       // Hands-free: reopen unless paused (speaking) or stopped. Back off on
       // repeated network failures so a dead connection doesn't spin.
       if (this.hands && !this.paused) {
-        if (this.fails > 4 && canRecord && getKey('groq')) {
+        if (this.fails > 4 && canRecord && canTranscribe()) {
           this.fails = 0;
           return this.startWhisper();
         }

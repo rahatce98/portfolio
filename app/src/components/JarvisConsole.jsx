@@ -146,8 +146,8 @@ const JarvisConsole = forwardRef(function JarvisConsole({ compact = false }, inp
               {j.speak ? 'voice on' : 'voice off'}
             </button>
           )}
-          <button type="button" className="jv2__tog" aria-pressed={j.lang === 'bn-BD'} onClick={() => j.setLang(j.lang === 'bn-BD' ? 'en-US' : 'bn-BD')} title="Speech language (English / বাংলা)">
-            {j.lang === 'bn-BD' ? 'বাং' : 'EN'}
+          <button type="button" className="jv2__tog" aria-pressed={j.lang !== 'en-US'} onClick={j.cycleLang} title="Speech language: AUTO (Bangla · English · Hindi) → EN → বাং → हिं">
+            {j.langLabel}
           </button>
         </div>
       )}

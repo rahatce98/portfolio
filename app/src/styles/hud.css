@@ -383,3 +383,52 @@
 @media (min-width: 1181px) and (max-width: 1680px) {
   .hud[data-overlay] .hud-agents { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* =============================================================================
+   LAB-06 Space Shuttle — sections/ShuttleLab.jsx
+   ========================================================================== */
+.shl { --st: 86, 220, 255; position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 0; height: calc(100dvh - 64px); min-height: 560px; background: radial-gradient(900px 600px at 40% 40%, rgba(86, 220, 255, 0.08), transparent 70%), #03060d; color: #dbe7f6; }
+.shl__view { position: relative; min-width: 0; }
+.shl__view > canvas, .shl__view > div:first-child { position: absolute !important; inset: 0; }
+.shl__hud { position: absolute; inset: 14px; pointer-events: none; }
+.shl__c { position: absolute; width: 22px; height: 22px; border: 1.5px solid rgba(var(--st), 0.7); }
+.shl__c--tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.shl__c--tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.shl__c--bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.shl__c--br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+.shl__title { position: absolute; top: 10px; left: 34px; display: grid; gap: 4px; }
+.shl__title b { font-size: 0.8rem; letter-spacing: 0.26em; color: #fff; text-shadow: 0 0 16px rgba(var(--st), 0.7); }
+.shl__title span { font-size: 0.62rem; letter-spacing: 0.14em; color: rgb(var(--st)); }
+.shl__telemetry { position: absolute; left: 34px; bottom: 16px; display: grid; grid-template-columns: auto auto; gap: 2px 12px; padding: 10px 14px; border: 1px solid rgba(255, 170, 60, 0.5); border-radius: 12px; background: rgba(20, 10, 2, 0.55); backdrop-filter: blur(8px); font-size: 0.62rem; color: #ffcf8a; }
+.shl__telemetry b { color: #fff; font-weight: 600; }
+.shl-tag { display: inline-block; padding: 2px 8px; border: 1px solid rgba(86, 220, 255, 0.6); border-radius: 6px; background: rgba(3, 7, 18, 0.75); color: #bfefff; font: 500 10px var(--mono); letter-spacing: 0.06em; white-space: nowrap; }
+.shl__info { position: absolute; right: 18px; top: 18px; width: min(300px, calc(100% - 36px)); display: grid; gap: 6px; padding: 14px 16px; border: 1px solid rgba(var(--st), 0.45); border-radius: 14px; background: rgba(6, 12, 24, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); animation: jvIn 0.3s var(--ease); }
+.shl__info > .mono { font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgb(var(--st)); }
+.shl__info b { font-size: 1rem; color: #fff; }
+.shl__info em { font-style: normal; font-size: 0.68rem; color: #ffcf8a; }
+.shl__info p { margin: 0; font-size: 0.78rem; line-height: 1.5; color: #9fb0c8; }
+.shl__info div { display: flex; gap: 6px; margin-top: 4px; }
+.shl__info button, .shl__acts button { padding: 7px 12px; border: 1px solid rgba(120, 190, 255, 0.28); border-radius: 9px; background: rgba(255, 255, 255, 0.03); color: #dbe7f6; font: 500 0.76rem var(--font); cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.15s; }
+.shl__info button:hover, .shl__acts button:hover { border-color: rgba(var(--st), 0.7); }
+.shl__acts button:active { transform: scale(0.97); }
+.shl__acts button:disabled { opacity: 0.45; cursor: default; }
+.shl__acts button[aria-pressed='true'] { color: rgb(var(--st)); border-color: rgb(var(--st)); background: rgba(var(--st), 0.08); }
+.shl__acts .is-primary { background: rgb(var(--st)); border-color: rgb(var(--st)); color: #03101c; }
+.shl__acts .is-launch { background: linear-gradient(180deg, #ffd08a, #ff8a2a); border-color: #ffb45a; color: #1a0d02; }
+.shl__panel { display: grid; grid-template-rows: auto minmax(0, 1fr); border-left: 1px solid rgba(120, 190, 255, 0.14); background: rgba(6, 12, 24, 0.7); min-height: 0; }
+.shl__acts { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px; border-bottom: 1px solid rgba(120, 190, 255, 0.14); }
+.shl__parts { overflow-y: auto; padding: 10px 14px 16px; display: grid; align-content: start; gap: 12px; scrollbar-width: thin; }
+.shl__group { display: grid; gap: 4px; }
+.shl__group > .mono { font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgb(var(--st)); margin-bottom: 2px; }
+.shl__part { display: grid; grid-template-columns: minmax(0, 1fr) 30px; gap: 6px; align-items: center; }
+.shl__name { all: unset; cursor: pointer; padding: 6px 10px; border: 1px solid rgba(120, 190, 255, 0.12); border-radius: 9px; font-size: 0.76rem; color: #dbe7f6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: border-color 0.2s, background 0.2s; }
+.shl__name:hover { border-color: rgba(var(--st), 0.5); }
+.shl__part[data-on='false'] .shl__name { color: #5a6a84; text-decoration: line-through; }
+.shl__part[data-sel='true'] .shl__name { border-color: rgb(var(--st)); background: rgba(var(--st), 0.1); }
+.shl__tog { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid rgba(120, 190, 255, 0.28); border-radius: 8px; background: none; color: #dbe7f6; font: 600 1rem var(--mono); cursor: pointer; }
+.shl__tog[aria-pressed='false'] { color: #54e2a2; border-color: rgba(84, 226, 162, 0.5); }
+@media (max-width: 860px) {
+  .shl { grid-template-columns: minmax(0, 1fr); grid-template-rows: 62vh auto; height: auto; }
+  .shl__panel { border-left: 0; border-top: 1px solid rgba(120, 190, 255, 0.14); }
+  .shl__parts { max-height: 360px; }
+}

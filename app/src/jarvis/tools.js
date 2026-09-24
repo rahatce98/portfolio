@@ -27,8 +27,9 @@ import { searchIndex, parseQuery } from '../os/searchIndex';
 import { sections, person, experience, education, contact } from '../data/site';
 import { switchBrain, brainState, BRAINS, available } from './brain';
 import { keyKinds, forgetKeys, KEY_KINDS } from './keys';
+import { openTab } from '../os/opentab';
 
-const LABS = { rocket: 'rocket', car: 'auto', auto: 'auto', systems: 'systems', gear: 'systems', pipe: 'pipe', sewer: 'pipe', hydraulics: 'pipe', beam: 'beam', engine: 'engine', turbofan: 'engine', jet: 'engine' };
+const LABS = { shuttle: 'shuttle', 'space shuttle': 'shuttle', sts: 'shuttle', orbiter: 'shuttle', rocket: 'rocket', car: 'auto', auto: 'auto', systems: 'systems', gear: 'systems', pipe: 'pipe', sewer: 'pipe', hydraulics: 'pipe', beam: 'beam', engine: 'engine', turbofan: 'engine', jet: 'engine' };
 const act = (tool, args = {}) => (a, ctx) => execute({ tool, arguments: typeof args === 'function' ? args(a) : args }, ctx);
 
 /** "projects", "the tools", "engineering labs", "jarvis" → a section, or null. */
@@ -56,19 +57,29 @@ const notes = {
   },
 };
 
-/* Returns false when the browser blocked the pop-up — voice commands have no
-   click behind them, so the caller then offers a one-tap button instead. */
-function openTab(url) {
-  const w = window.open(url, '_blank');
-  if (!w) return false;
-  try {
-    w.opener = null;
-  } catch {
-    /* cross-origin already */
-  }
-  return true;
-}
 const opened = (url, text, title) => (openTab(url) ? { text } : { text: `${text.replace(/ (are|is) open\.$/, '')} — tap to open (the browser blocked the automatic tab).`, confirm: { title: title || 'Open it now?', detail: url, yes: () => (openTab(url), { text: 'Opened.' }) } });
+/* Semantic resolution: when the words don't match any title, the brain picks
+   the entry that fits the *meaning* ("the letter thing for DSIP", "that
+   hydraulics calculator", "আমার RFI টুলটা খোলো"). Returns an index entry or null. */
+export async function resolveMeaning(q, ctx, typeHint) {
+  if (!available().length || !ctx.index?.length) return null;
+  const pool = ctx.index.filter((e) => e.type !== 'command' && (!typeHint || e.type === typeHint)).slice(0, 260);
+  if (!pool.length) return null;
+  const list = pool.map((e, i) => `${i + 1}|${e.type}|${e.title}|${String(e.desc || '').slice(0, 70)}`).join('\n');
+  try {
+    const r = await ctx.think([
+      { role: 'system', content: 'You map a request (any language: English, Bangla, Hindi, mixed) to the single best entry by meaning, not spelling. Reply with ONLY the entry number, or 0 if nothing fits.' },
+      { role: 'user', content: `Request: ${q}
+Entries (number|type|title|details):
+${list}` },
+    ]);
+    const n = parseInt(String(r.text).match(/\d+/)?.[0] || '0', 10);
+    return n > 0 && n <= pool.length ? pool[n - 1] : null;
+  } catch {
+    return null;
+  }
+}
+
 const confirmOpen = (url, title) => ({
   text: `Ready to open ${new URL(url).host}.`,
   confirm: { title: title || 'Open this page?', detail: url, yes: () => (openTab(url), { text: `Opened ${new URL(url).host}.` }) },
@@ -326,6 +337,8 @@ export const TOOLS = [
         return rest.length ? { ...opened, results: rest, list: [...(opened.list || []), 'Also matching:'] } : opened;
       }
       if (local) return local;
+      const meant = await resolveMeaning(ask, ctx);
+      if (meant) return { text: `Closest match by meaning: **${meant.title}**`, results: [{ key: meant.key, type: meant.type, title: meant.title, desc: meant.desc, action: meant.action }], show: true };
       if (!ctx.context?.online) return { text: `Nothing on this site matches “${q}”, and web search needs the internet (offline mode).`, error: true };
       return execute({ tool: 'webSearch', arguments: { query: q, question: ask } }, ctx);
     },
@@ -527,6 +540,30 @@ export const TOOLS = [
     },
   },
 
+  {
+    id: 'shuttle', label: 'Space Shuttle', stage: 'execute', help: ['disassemble / assemble / launch the shuttle', 'LAB-06 Space Shuttle, by voice'],
+    match: (s) => {
+      if (!/shuttle|শাটল|স্পেস শাটল|शटल/.test(s)) return null;
+      const verb = /(dis ?assemble|take (it )?apart|explode|খুলে ফেল|আলাদা)/.test(s) ? 'disassemble' : /(assemble|rebuild|put (it )?together|জোড়া|লাগাও)/.test(s) ? 'assemble' : /(launch|lift ?off|fly|উড়াও|উৎক্ষেপণ|लॉन्च)/.test(s) ? 'launch' : /blueprint|wireframe/.test(s) ? 'blueprint' : /reset/.test(s) ? 'reset' : 'open';
+      return { verb };
+    },
+    run: ({ verb }) => {
+      const open = !document.querySelector('.shl');
+      if (open) window.dispatchEvent(new CustomEvent('rh-lab', { detail: 'shuttle' }));
+      if (verb !== 'open') setTimeout(() => window.dispatchEvent(new CustomEvent('rh-shuttle', { detail: verb })), open ? 1600 : 0);
+      return { text: { open: 'Space Shuttle lab. Say “disassemble”, “assemble” or “launch”.', disassemble: 'Disassembling the stack, part by part.', assemble: 'Assembling — every part back to its seat.', launch: 'Main engine start… boosters ignite… lift-off.', blueprint: 'Blueprint view.', reset: 'Back on the pad.' }[verb] };
+    },
+  },
+  {
+    id: 'boost', label: 'Rocket boost', stage: 'execute', help: ['super power', 'hero rocket: super-heavy thrust'],
+    match: (s) => (/(super ?power|super heavy|max(imum)? (thrust|power)|full power|boost)( (the )?rocket)?|rocket (super ?power|boost)|সুপার পাওয়ার|सुपर पावर/.test(s) && !/brain|model/.test(s) ? {} : null),
+    run: (a, ctx) => {
+      ctx.scrollTo?.('home');
+      setTimeout(() => window.dispatchEvent(new Event('rh-rocket-boost')), 500);
+      return { text: 'Super-heavy thrust engaged.' };
+    },
+  },
+
   /* ------------------------------------------------------ brain + voice --- */
   {
     id: 'brain', label: 'Brain', stage: 'execute', help: ['switch brain · use claude · brains', 'change the AI model by voice'],
@@ -587,6 +624,8 @@ export const TOOLS = [
       if (/^(stop|shut up|quiet|silence|be quiet|চুপ( করো)?|থামো)$/.test(s)) return { hush: true };
       if (/^(speak|talk|reply|answer)( in)? (bangla|bengali)$|^বাংলা(য়)?( বলো| কথা বলো)?$/.test(s)) return { lang: 'bn-BD' };
       if (/^(speak|talk|reply|answer)( in)? english$|^ইংরেজি(তে)?( বলো)?$/.test(s)) return { lang: 'en-US' };
+      if (/^(speak|talk|reply|answer)( in)? hindi$|^हिंदी( में)?( बोलो)?$/.test(s)) return { lang: 'hi-IN' };
+      if (/^(auto|any|all) languages?$|^auto language( on)?$|^(detect|auto detect) language$/.test(s)) return { lang: 'auto' };
       if (/^(mute|voice off|don'?t speak)$/.test(s)) return { mute: true };
       if (/^(unmute|voice on|speak to me)$/.test(s)) return { unmute: true };
       return null;
@@ -674,18 +713,35 @@ export const TOOLS = [
   {
     id: 'open', label: 'Open', stage: 'execute', help: ['open <tool | project | lab>', 'launch anything in the index'],
     match: (s, raw, ctx) => {
+      // Bangla / Hindi / Banglish: "RFI টা খোলো", "আমার লেটার টুল ওপেন করো", "RFI खोलो", "rfi ta khulo"
+      const bh = raw.trim().match(/^(.+?)\s*(?:টা|টি|টাকে|টাও|को)?\s*(?:খোলো|খুলো|খোল|খুলে দাও|ওপেন করো|ওপেন কর|চালু করো|খোলেন|khulo|kholo|open koro|open kor|खोलो|खोल दो|ओपन करो|चालू करो)[\s।!.]*$/i);
+      if (bh) {
+        const q = bh[1].replace(/^(আমার|my|मेरा|मेरी)\s+/i, '');
+        const hit = searchIndex(ctx.index, q, { context: ctx.context, pins: ctx.pins, limit: 3 }).find((h) => h.type !== 'command' && h.score > 3);
+        return hit ? { call: hit.action } : available().length ? { semantic: q } : null;
+      }
       const m = s.match(/^(?:open|launch|run|start|pull up|bring up)\s+(.+)$/);
       if (m) {
         const { terms, typeHint } = parseQuery(m[1]);
         const hit = searchIndex(ctx.index, terms || m[1], { context: ctx.context, pins: ctx.pins, typeHint, limit: 5 }).find((h) => h.type !== 'command');
-        return hit ? { call: hit.action } : null;
+        if (hit) return { call: hit.action };
+        // No title matches the words — let the brain match the meaning.
+        return available().length ? { semantic: m[1], typeHint } : null;
       }
       // Bare words ("rfi", "dsip tracker") open a tool only on a strong title match.
       if (s.split(/\s+/).length > 3) return null;
       const hit = searchIndex(ctx.index, s, { context: ctx.context, pins: ctx.pins, limit: 3 }).find((h) => h.type === 'tool' && h.score > 4);
       return hit ? { call: hit.action } : null;
     },
-    run: ({ call }, ctx) => execute(call, ctx),
+    run: async ({ call, semantic, typeHint }, ctx) => {
+      if (semantic) {
+        ctx.stage?.('searching');
+        const e = await resolveMeaning(semantic, ctx, typeHint);
+        if (!e) return { text: `I couldn't find anything that means “${semantic}” in your tools, projects or labs.`, error: true };
+        call = e.action;
+      }
+      return execute(call, ctx);
+    },
   },
 ];
 
@@ -695,7 +751,7 @@ export const MODEL_CALLABLE = ['weather', 'price', 'news', 'search', 'calc', 'ti
 // Match order: explicit verbs first, specific parsers (engineering, units)
 // before the generic calculator, loose keyword matchers (weather, price, news,
 // search) after, the fuzzy opener last.
-const ORDER = ['help', 'briefing', 'voice', 'brain', 'keys', 'float', 'setup', 'notion', 'tool-add', 'remember', 'recall', 'notes', 'bookmark-import', 'bookmark-add', 'bookmark-list', 'file', 'clipboard', 'history', 'favorites', 'install', 'palette', 'motion', 'lab', 'theme', 'vault', 'unlock', 'showtools', 'go', 'youtube', 'google', 'openurl', 'pipe', 'convert', 'calc', 'time', 'price', 'weather', 'news', 'about', 'search', 'find', 'open'];
+const ORDER = ['help', 'shuttle', 'boost', 'briefing', 'voice', 'brain', 'keys', 'float', 'setup', 'notion', 'tool-add', 'remember', 'recall', 'notes', 'bookmark-import', 'bookmark-add', 'bookmark-list', 'file', 'clipboard', 'history', 'favorites', 'install', 'palette', 'motion', 'lab', 'theme', 'vault', 'unlock', 'showtools', 'go', 'youtube', 'google', 'openurl', 'pipe', 'convert', 'calc', 'time', 'price', 'weather', 'news', 'about', 'search', 'find', 'open'];
 const SORTED = ORDER.map((id) => TOOLS.find((t) => t.id === id)).concat(TOOLS.filter((t) => !ORDER.includes(t.id)));
 
 export function route(raw, ctx) {

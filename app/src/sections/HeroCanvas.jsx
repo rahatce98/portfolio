@@ -14,7 +14,7 @@ import { perfTier, prefersReducedMotion } from '../hooks/useEnv';
  * WebGL stack.
  * -------------------------------------------------------------------------- */
 
-function Director({ progressRef, throttleRef, ignitedRef, liftRef, rocketRef }) {
+function Director({ progressRef, throttleRef, ignitedRef, boostRef, boostOnRef, liftRef, rocketRef }) {
   const { camera, pointer } = useThree();
   const reduced = prefersReducedMotion();
   const base = useMemo(() => new THREE.Vector3(), []);
@@ -49,11 +49,19 @@ function Director({ progressRef, throttleRef, ignitedRef, liftRef, rocketRef }) 
     // Throttle spools with scroll, or latches full when ignition is on.
     const wanted = ignitedRef.current ? 1 : THREE.MathUtils.clamp((p - 0.2) * 2.1, 0, 1);
     throttleRef.current = THREE.MathUtils.lerp(throttleRef.current, wanted, k * 0.5);
+    // Super-heavy mode spools up over ~1 s and bleeds off more slowly.
+    const bw = boostOnRef.current ? 1 : 0;
+    boostRef.current = THREE.MathUtils.lerp(boostRef.current, bw, k * (bw ? 0.35 : 0.2));
+    if (boostRef.current > 0.02 && !reduced) {
+      const tt = state.clock.elapsedTime;
+      camera.position.x += Math.sin(tt * 61) * 0.03 * boostRef.current;
+      camera.position.y += Math.sin(tt * 47.5) * 0.03 * boostRef.current;
+    }
 
     // The vehicle climbs once there is meaningful thrust.
     liftRef.current = THREE.MathUtils.lerp(
       liftRef.current,
-      Math.max(0, throttleRef.current - 0.4) * 2.2,
+      Math.max(0, throttleRef.current - 0.4) * 2.2 + boostRef.current * 1.6,
       k * 0.3
     );
     if (rocketRef.current) rocketRef.current.position.y = liftRef.current;
@@ -62,8 +70,9 @@ function Director({ progressRef, throttleRef, ignitedRef, liftRef, rocketRef }) 
   return null;
 }
 
-function Scene({ progressRef, ignitedRef, spin, tick, onIgnite }) {
+function Scene({ progressRef, ignitedRef, boostOnRef, spin, tick, onIgnite }) {
   const throttle = useRef(0);
+  const boost = useRef(0);
   const lift = useRef(0);
   const explode = useRef(0);
   const rocketRef = useRef();
@@ -75,6 +84,8 @@ function Scene({ progressRef, ignitedRef, spin, tick, onIgnite }) {
         progressRef={progressRef}
         throttleRef={throttle}
         ignitedRef={ignitedRef}
+        boostRef={boost}
+        boostOnRef={boostOnRef}
         liftRef={lift}
         rocketRef={rocketRef}
       />
@@ -82,6 +93,7 @@ function Scene({ progressRef, ignitedRef, spin, tick, onIgnite }) {
         <Rocket
           explodeRef={explode}
           throttleRef={throttle}
+          boostRef={boost}
           spinRef={spin}
           onTick={tick}
           selected={null}
@@ -96,7 +108,7 @@ function Scene({ progressRef, ignitedRef, spin, tick, onIgnite }) {
   );
 }
 
-export default function HeroCanvas({ active, progressRef, ignitedRef, spin, tick, onIgnite, onReady }) {
+export default function HeroCanvas({ active, progressRef, ignitedRef, boostOnRef, spin, tick, onIgnite, onReady }) {
   return (
     <Stage
       active={active}
@@ -107,6 +119,7 @@ export default function HeroCanvas({ active, progressRef, ignitedRef, spin, tick
       <Scene
         progressRef={progressRef}
         ignitedRef={ignitedRef}
+        boostOnRef={boostOnRef}
         spin={spin}
         tick={tick}
         onIgnite={onIgnite}

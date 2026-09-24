@@ -9,6 +9,7 @@ import { historyStore, clearHistory, clock } from './history';
 import { osStore } from './context';
 import { installApp, pwaStore } from './pwa';
 import { searchIndex, parseQuery, slug } from './searchIndex';
+import { openTab } from './opentab';
 
 /* -----------------------------------------------------------------------------
  * Rahat OS action registry — the only door from a command to a side effect.
@@ -28,21 +29,6 @@ import { searchIndex, parseQuery, slug } from './searchIndex';
 
 const str = (required = true, max = 400) => ({ type: 'string', required, max });
 const numf = (required = true) => ({ type: 'number', required });
-
-function openTab(url) {
-  // Not using the 'noopener' feature: with it, window.open always returns null
-  // and a blocked pop-up is indistinguishable from success. Cutting `opener`
-  // straight away gives the same protection.
-  const w = window.open(url, '_blank');
-  if (w) {
-    try {
-      w.opener = null;
-    } catch {
-      /* cross-origin already */
-    }
-  }
-  return !!w;
-}
 
 const findSection = (q) => {
   const s = String(q).toLowerCase().replace(/^the\s+/, '').trim();
@@ -78,7 +64,12 @@ export const ACTIONS = {
       trackOpen(t.id);
       if (/#vault$/.test(t.url)) return ACTIONS.openVault.run({}, env);
       const offline = !osStore.get().online;
-      if (!openTab(t.url)) return { text: `Your browser blocked the new tab — open ${t.name} here:`, sources: [{ title: t.name, url: t.url }], show: true };
+      if (!openTab(t.url))
+        return {
+          text: `${t.name} is ready — tap once to open it. After that I can open tools by voice straight into that tab.`,
+          confirm: { title: `Open ${t.name}?`, detail: t.url, yes: () => (openTab(t.url), { text: `Opened ${t.name}.` }) },
+          show: true,
+        };
       return { text: `Opening ${t.name}.${offline ? ' You’re offline, so it may not load until you reconnect.' : ''}` };
     },
   },

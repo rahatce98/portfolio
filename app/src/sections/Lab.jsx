@@ -20,6 +20,7 @@ const SystemsSection = lazy(() => import('./SystemsSection'));
 const PipeLab = lazy(() => import('./PipeLab'));
 const BeamLab = lazy(() => import('./BeamLab'));
 const EngineLab = lazy(() => import('./EngineLab'));
+const ShuttleLab = lazy(() => import('./ShuttleLab'));
 
 function Wrapped({ C, code, title, lead }) {
   return (
@@ -40,6 +41,7 @@ function Wrapped({ C, code, title, lead }) {
 
 export const LABS = [
   { id: 'engine', code: 'LAB-00', group: 'Cinematic', label: 'Turbofan', note: 'A scroll-scrubbed product film: blueprint → materialize → explode → fly-through → reassemble.', art: 'engine', render: () => <EngineLab /> },
+  { id: 'shuttle', code: 'LAB-06', group: '3D', label: 'Space Shuttle', note: '16 assemblies — take the STS stack apart part by part, rebuild it, then launch it.', art: 'shuttle', render: () => <ShuttleLab /> },
   { id: 'rocket', code: 'LAB-01', group: '3D', label: 'Launch Vehicle', note: 'Scroll to disassemble a two-stage rocket, stage by stage.', art: 'rocket', render: () => <RocketLab /> },
   { id: 'auto', code: 'LAB-02', group: '3D', label: 'Supercar', note: 'Nine assemblies. Explode, orbit, and inspect each one.', art: 'car', render: () => <AutoLab /> },
   { id: 'systems', code: 'LAB-03', group: '3D', label: 'Mechanisms', note: 'Gears, pistons and linkages running in real time.', art: 'gear', render: () => <SystemsSection /> },
@@ -55,6 +57,15 @@ export const LABS = [
 
 function Art({ kind }) {
   switch (kind) {
+    case 'shuttle':
+      return (
+        <svg viewBox="0 0 120 120" className="lart lart--rocket">
+          <path d="M60 10c7 8 9 18 9 30v46H51V40c0-12 2-22 9-30z" />
+          <path d="M41 30c3 4 4 10 4 16v40h-8V46c0-6 1-12 4-16zM79 30c3 4 4 10 4 16v40h-8V46c0-6 1-12 4-16z" />
+          <path d="M60 44l18 30v6H42v-6z" />
+          <path className="lart__flame" d="M54 88c2 10 4 16 6 22 2-6 4-12 6-22zM38 88c1 8 3 12 4 16 1-4 3-8 4-16zM74 88c1 8 3 12 4 16 1-4 3-8 4-16z" />
+        </svg>
+      );
     case 'rocket':
       return (
         <svg viewBox="0 0 120 120" className="lart lart--rocket">

@@ -54,6 +54,9 @@ export const COMMANDS = TOOLS.filter((t) => t.help).map((t) => ({
 const Ctx = createContext(null);
 export const useJarvis = () => useContext(Ctx);
 
+/* Speech languages. 'auto' = Whisper: Bangla, English, Hindi or a mix, no choosing. */
+export const LANGS = ['auto', 'en-US', 'bn-BD', 'hi-IN'];
+export const LANG_LABEL = { auto: 'AUTO', 'en-US': 'EN', 'bn-BD': 'বাং', 'hi-IN': 'हिं' };
 const ls = {
   get: (k, d) => {
     try {
@@ -104,7 +107,8 @@ function systemMessages(tools, context, { voice, lang } = {}) {
   const brain = brainById(activeProvider());
   const pub = `You are J.A.R.V.I.S., the assistant built into Rahat OS — the portfolio and personal engineering workspace of ${person.name} (${person.role}, ${person.location}). Be concise, warm and precise; brief British-butler wit is welcome. Today is ${new Date().toDateString()}, local time ${new Date().toLocaleTimeString()}.
 You are currently thinking with ${brain ? `${brain.label} (${brain.vendor})` : 'a language model'}; if asked which model or brain you are, say so. The user can say "switch brain" or "use claude / gpt / gemini / qwen" to change it.
-Language: reply in the language the user used — Bangla (বাংলা) if they wrote or spoke Bangla, otherwise English.${lang === 'bn-BD' ? ' The user prefers Bangla right now.' : ''}
+Language: reply in the language the user used — Bangla (বাংলা), English or Hindi (हिन्दी); match mixed Banglish/Hinglish naturally.${lang === 'bn-BD' ? ' The user prefers Bangla right now.' : lang === 'hi-IN' ? ' The user prefers Hindi right now.' : ''}
+Talk like a sharp, friendly human assistant: understand what they mean, not just the words — resolve vague requests to the right tool, section or action, infer intent from context and earlier turns, and ask one short question only when truly ambiguous.
 ${voice ? 'This is a spoken conversation: answer in 1-3 short natural sentences, no markdown, no lists, unless asked for detail.' : 'Use short paragraphs or bullets; markdown **bold**, `code` and [links](url) render.'}
 Current app context: ${JSON.stringify({ ...context, availableActions: undefined })}
 
@@ -116,9 +120,8 @@ To do something in the app reply with ONLY one line of JSON:
 ACTION: {"tool": "<name>", "arguments": {…}}
 using one of these actions:
 ${actionCatalog()}
-Tool ids for openTool: ${tools
-    .filter((t) => t.kind !== 'Bookmark')
-    .slice(0, 45)
+Tool ids for openTool — match the user's MEANING, not exact words (e.g. "the letters app" → the letters tool): ${tools
+    .slice(0, 220)
     .map((t) => `${t.id}=${t.name}`)
     .join('; ')}
 
@@ -158,7 +161,7 @@ export function JarvisProvider({ children }) {
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
   const [hands, setHands] = useState(false);
-  const [lang, setLangState] = useState(() => ls.get('rh-jv-lang', 'en-US'));
+  const [lang, setLangState] = useState(() => ls.get('rh-jv-lang', 'auto'));
   const [booted, setBooted] = useState(false);
   const [keys, setKeys] = useState(() => keyKinds().length);
   const [speak, setSpeak] = useState(() => ls.get('rh-jv-voice', '0') === '1');
@@ -275,13 +278,16 @@ export function JarvisProvider({ children }) {
       setLangState(l);
       ls.set('rh-jv-lang', l);
       listener.lang = l;
-      if (listener.alive && listener.hands) {
-        listener.pause();
-        setTimeout(() => listener.resume(), 300);
+      // The recogniser may change (browser ↔ Whisper): restart an open mic.
+      if (listener.alive) {
+        const hands = listener.hands;
+        listener.stop();
+        setTimeout(() => listener.start({ hands }).then((ok) => hands && setHands(ok)), 250);
       }
     },
     [listener],
   );
+  const cycleLang = useCallback(() => setLang(LANGS[(LANGS.indexOf(lang) + 1) % LANGS.length]), [lang, setLang]);
 
   const setHandsFree = useCallback(
     async (on) => {
@@ -446,7 +452,7 @@ export function JarvisProvider({ children }) {
         }
         if (a.lang) {
           setLang(a.lang);
-          return { text: a.lang === 'bn-BD' ? 'ঠিক আছে, এখন থেকে বাংলায় শুনব ও বলব।' : 'Switched to English.' };
+          return { text: { 'bn-BD': 'ঠিক আছে, এখন থেকে বাংলায় শুনব ও বলব।', 'hi-IN': 'ठीक है, अब मैं हिंदी में सुनूँगा और बोलूँगा।', auto: 'Auto language on — speak Bangla, English or Hindi, I will follow.', 'en-US': 'Switched to English.' }[a.lang] };
         }
         if (a.mute) return toggleVoice(false), { text: 'Voice off. I will reply in text.' };
         if (a.unmute) return toggleVoice(true), { text: 'Voice on.' };
@@ -796,6 +802,8 @@ export function JarvisProvider({ children }) {
     listen,
     setHandsFree,
     setLang,
+    cycleLang,
+    langLabel: LANG_LABEL[lang] || 'EN',
     loadLocal,
     choose,
     push,

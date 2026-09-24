@@ -157,6 +157,24 @@ export default function CommandPalette() {
               if (e.key === 'Enter' && items[i]) pick(items[i]);
             }}
           />
+          {j.canListen && (
+            <button
+              type="button"
+              className="cmdk__mic"
+              onClick={() => {
+                setOpen(false);
+                window.dispatchEvent(new Event('rh-jarvis'));
+                setTimeout(() => j.listen(), 250);
+              }}
+              aria-label="Speak a command"
+              title="Speak — Bangla, English or Hindi"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <rect x="9" y="3" width="6" height="12" rx="3" />
+                <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+              </svg>
+            </button>
+          )}
           <kbd>esc</kbd>
         </div>
         <ul className="cmdk__list" id="cmdk-list" role="listbox" ref={listRef}>

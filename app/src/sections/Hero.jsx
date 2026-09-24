@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState, useCallback } from 'react';
+import { useEffect, lazy, Suspense, useRef, useState, useCallback } from 'react';
 import { person, capabilities } from '../data/site';
 import { useSectionProgress, useInView, useScrollTo } from '../hooks/useScroll';
 import usePointerOrbit from '../hooks/usePointerOrbit';
@@ -29,13 +29,33 @@ export default function Hero({ onSceneReady }) {
   const { bind, spin, tick, isDragging, moved } = usePointerOrbit();
   const ignitedRef = useRef(false);
   const [ignited, setIgnited] = useState(false);
+  const boostOnRef = useRef(false);
+  const [boost, setBoost] = useState(false);
   const scrollTo = useScrollTo();
   const webgl = hasWebGL();
 
   const toggleIgnition = useCallback(() => {
     ignitedRef.current = !ignitedRef.current;
     setIgnited(ignitedRef.current);
+    if (!ignitedRef.current) {
+      boostOnRef.current = false;
+      setBoost(false);
+    }
   }, []);
+  // Super-heavy mode: full ignition plus a boosted plume, climb and shake.
+  const toggleBoost = useCallback(() => {
+    boostOnRef.current = !boostOnRef.current;
+    setBoost(boostOnRef.current);
+    if (boostOnRef.current && !ignitedRef.current) {
+      ignitedRef.current = true;
+      setIgnited(true);
+    }
+  }, []);
+  useEffect(() => {
+    const on = () => toggleBoost();
+    window.addEventListener('rh-rocket-boost', on);
+    return () => window.removeEventListener('rh-rocket-boost', on);
+  }, [toggleBoost]);
 
   // Releasing a drag over the vehicle must not also count as a click on it.
   const igniteFromModel = useCallback(() => {
@@ -64,6 +84,7 @@ export default function Hero({ onSceneReady }) {
             active={inView}
             progressRef={progressRef}
             ignitedRef={ignitedRef}
+            boostOnRef={boostOnRef}
             spin={spin}
             tick={tick}
             onIgnite={igniteFromModel}
@@ -98,6 +119,14 @@ export default function Hero({ onSceneReady }) {
                   {ignited ? 'Cut thrust' : 'Ignite engine'}
                 </button>
               )}
+              {webgl && (
+                <button className="btn btn--boost" type="button" data-on={boost} onClick={toggleBoost} aria-pressed={boost}>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
+                  </svg>
+                  {boost ? 'Super heavy · ON' : 'Super power'}
+                </button>
+              )}
             </div>
 
             <dl className="hero__stats">
@@ -116,6 +145,15 @@ export default function Hero({ onSceneReady }) {
         </div>
       </div>
 
+      {webgl && boost && (
+        <div className="hero__boost mono" aria-live="polite">
+          <b>SUPER HEAVY THRUST</b>
+          <span>
+            <i />
+            7,590 kN · 3.4× · Mach disk stable
+          </span>
+        </div>
+      )}
       {webgl && (
         <span className="hero__scroll">
           <Rotate style={{ width: 14, height: 14 }} />

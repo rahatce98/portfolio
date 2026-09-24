@@ -176,12 +176,14 @@ async function detectPollinations() {
 /* The owner's Apps Script bridge holds the AI keys server-side, so every
    browser and device gets the keyed brains with no setup. */
 const viaBridge = new Set(); // brain ids the bridge can serve
+let bridgeStt = false; // the bridge can transcribe speech (Whisper)
 async function detectBridge() {
   const s = await bridgeStatus();
   viaBridge.clear();
   if (s.unauth) return { ok: false, detail: 'awaiting one-time authorisation' };
   if (!s.ok) return { ok: false, detail: s.error || 'unreachable' };
   (s.brains || []).forEach((id) => viaBridge.add(id));
+  bridgeStt = !!s.stt;
   return s.ai?.length ? { ok: true, detail: `${s.ai.length} keys server-side` } : { ok: false, detail: 'no key stored on the bridge' };
 }
 const bridged = (b) => b.key && !getKey(b.key) && viaBridge.has(b.id);
@@ -584,13 +586,28 @@ export async function think(messages, opts = {}) {
 /* -------------------------------------------------- speech-to-text (STT) --- */
 
 /** Whisper on Groq — used when the browser has no speech recognition. */
+export const canTranscribe = () => !!getKey('groq') || bridgeStt;
+
+/** Whisper on Groq — any language, auto-detected unless `lang` is given.
+    Direct with a key on this device, otherwise through the owner's bridge. */
 export async function transcribe(blob, lang) {
   const key = getKey('groq');
-  if (!key) throw new Error('no Groq key for speech');
+  const two = lang && lang !== 'auto' ? lang.slice(0, 2) : '';
+  if (!key) {
+    if (!bridgeStt) throw new Error('speech-to-text unavailable');
+    const b64 = await new Promise((res, rej) => {
+      const fr = new FileReader();
+      fr.onload = () => res(String(fr.result).split(',')[1] || '');
+      fr.onerror = rej;
+      fr.readAsDataURL(blob);
+    });
+    const j = await bridge({ a: 'stt', audio: b64, mime: blob.type || 'audio/webm', lang: two });
+    return (j.text || '').trim();
+  }
   const fd = new FormData();
   fd.append('file', blob, 'speech.webm');
   fd.append('model', 'whisper-large-v3-turbo');
-  if (lang) fd.append('language', lang.slice(0, 2));
+  if (two) fd.append('language', two);
   const r = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${key}` }, body: fd, signal: timeout(30000) });
   const j = await r.json();
   if (!r.ok) throw new Error(j.error?.message || `HTTP ${r.status}`);

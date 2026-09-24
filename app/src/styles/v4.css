@@ -438,3 +438,29 @@ body[data-theater] .progress { top: 58px; }
 .addlg__forgot summary { cursor: pointer; color: var(--ink-3); }
 .addlg__forgot p { margin: 8px 0 0; line-height: 1.55; }
 .addlg__forgot a { color: var(--accent); }
+
+/* --- hero: super-heavy boost -------------------------------------------------- */
+.btn--boost {
+  position: relative; overflow: hidden;
+  border: 1px solid rgba(255, 170, 60, 0.55);
+  background: linear-gradient(180deg, rgba(255, 150, 40, 0.14), rgba(255, 90, 20, 0.06));
+  color: #ffcf8a;
+}
+.btn--boost:hover { border-color: #ffb45a; color: #fff; }
+.btn--boost::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 220, 160, 0.35) 50%, transparent 70%); transform: translateX(-120%); }
+.btn--boost:hover::after { animation: boostSheen 0.9s var(--ease); }
+.btn--boost[data-on='true'] { color: #1a0d02; background: linear-gradient(180deg, #ffd08a, #ff8a2a); border-color: #ffb45a; box-shadow: 0 0 32px -4px rgba(255, 140, 40, 0.85), 0 0 0 4px rgba(255, 140, 40, 0.14); animation: boostPulse 1.2s ease-in-out infinite; }
+@keyframes boostSheen { to { transform: translateX(120%); } }
+@keyframes boostPulse { 50% { box-shadow: 0 0 46px -2px rgba(255, 140, 40, 1), 0 0 0 7px rgba(255, 140, 40, 0.08); } }
+.hero__boost {
+  position: absolute; right: clamp(16px, 5vw, 80px); bottom: 96px; z-index: 3;
+  display: grid; gap: 4px; padding: 10px 14px;
+  border: 1px solid rgba(255, 170, 60, 0.5); border-radius: 12px;
+  background: rgba(20, 10, 2, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  color: #ffcf8a; font-size: 0.64rem; letter-spacing: 0.12em;
+  animation: jvIn 0.4s var(--ease);
+}
+.hero__boost b { font-size: 0.74rem; letter-spacing: 0.24em; color: #fff; text-shadow: 0 0 14px rgba(255, 140, 40, 0.9); }
+.hero__boost span { display: inline-flex; align-items: center; gap: 8px; }
+.hero__boost i { width: 7px; height: 7px; border-radius: 50%; background: #ff9a3c; box-shadow: 0 0 10px #ff9a3c; animation: hudBeat 0.8s ease-in-out infinite; }
+@media (max-width: 720px) { .hero__boost { bottom: 70px; right: 16px; } }
