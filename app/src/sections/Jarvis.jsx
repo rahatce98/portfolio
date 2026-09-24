@@ -42,12 +42,12 @@ export default function Jarvis() {
           <div>
             <span className="section-head__index">07 — J.A.R.V.I.S.</span>
             <h2>
-              J.A.R.V.I.S.<span className="dim"> — ask, search, calculate, open.</span>
+              J.A.R.V.I.S.<span className="dim"> — ask, search, calculate, open. By voice.</span>
             </h2>
           </div>
           <p>
-            The assistant behind Rahat OS. It understands commands without any AI, uses a free local
-            model when one is available, and is on every page — press <kbd>Ctrl</kbd> <kbd>J</kbd> or the orb.
+            The assistant behind Rahat OS: many AI brains with instant fallback (say “switch brain”), hands-free
+            voice in English and বাংলা, and commands that work without any AI. On every page — <kbd>Ctrl</kbd> <kbd>J</kbd> or the orb.
           </p>
         </div>
 
@@ -57,8 +57,9 @@ export default function Jarvis() {
             <div className="jv2__status">
               <span className="jv2__dot" />
               <b>{j.online ? STATE_LABEL[j.state] : 'Offline mode'}</b>
+              {j.hands && <span className="jv2__hands mono">hands-free · {j.lang === 'bn-BD' ? 'বাংলা' : 'EN'}</span>}
               <span className="mono">
-                Brain: {j.provider ? `${j.kind} · ${PROVIDERS.find((p) => p.id === j.provider)?.label}` : 'built-in commands'}
+                Brain: {j.provider ? `${PROVIDERS.find((p) => p.id === j.provider)?.label} · ${j.kind}` : 'built-in commands'}
               </span>
             </div>
             <ol className="jv2__pipe" aria-label="Task progress">

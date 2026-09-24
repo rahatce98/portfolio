@@ -1,7 +1,8 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { useJarvis, suggest, SETUP, COMMANDS, STATE_LABEL } from '../jarvis/engine';
-import { PROVIDERS } from '../jarvis/brain';
+import { PROVIDERS, BRAINS, brainById, refreshKeyed, available, activeProvider } from '../jarvis/brain';
 import { bridge } from '../jarvis/memory';
+import { parseKeys, addKeys, KEY_KINDS, mask } from '../jarvis/keys';
 import { useHistory } from '../os/history';
 import { TYPES } from '../os/searchIndex';
 
@@ -15,12 +16,12 @@ import { TYPES } from '../os/searchIndex';
 
 /** JARVIS ● ONLINE · Brain: Local — or OFFLINE MODE. */
 export function JarvisStatus({ compact }) {
-  const { state, online, kind, booted } = useJarvis();
-  const brain = kind || (booted ? 'Built-in' : '—');
+  const { state, online, kind, booted, providerLabel, hands } = useJarvis();
+  const brain = providerLabel || kind || (booted ? 'Built-in' : '—');
   return (
     <div className="jstat" data-online={online} data-state={state} title={online ? 'Online' : 'Offline — navigation, tools, calculators and local AI still work'}>
       <span className="jstat__dot" aria-hidden="true" />
-      <b>{online ? (state === 'idle' ? 'Online' : STATE_LABEL[state]) : 'Offline mode'}</b>
+      <b>{online ? (state === 'idle' ? (hands ? 'Listening for “Jarvis”' : 'Online') : STATE_LABEL[state]) : 'Offline mode'}</b>
       {!compact && (
         <span className="jstat__brain mono" title={kind ? `${kind} model` : 'No AI model — every command still works'}>
           Brain: {brain}
@@ -33,18 +34,21 @@ export function JarvisStatus({ compact }) {
 /* ------------------------------------------------ advanced AI settings --- */
 
 export function ProviderPanel({ variant = 'chips' }) {
-  const { brain, choose, loadLocal, run, online } = useJarvis();
+  const { brain, choose, loadLocal, run, online, keys } = useJarvis();
+  // Chips show what can think right now (plus one-click local installs);
+  // the full list shows everything with its status.
+  const list = variant === 'chips' ? PROVIDERS.filter((p) => brain.status[p.id]?.ok || brain.status[p.id]?.can) : PROVIDERS;
   return (
     <div className={variant === 'chips' ? 'jv2__models' : 'jprov'} role="group" aria-label="AI model">
       {variant !== 'chips' && (
         <p className="jprov__note">
-          J.A.R.V.I.S. prefers models on this device, then in the browser, then the cloud. With none, every command still works.
+          Auto uses your keyed brains first (best answers), then this computer, the browser, and free tiers — falling back instantly if one fails. Say “switch brain” or “use claude” any time. With none, every command still works.
         </p>
       )}
       <button type="button" aria-pressed={brain.prefer === 'auto'} onClick={() => choose('auto')}>
         {variant !== 'chips' && <i data-ok="true" />}Auto
       </button>
-      {PROVIDERS.map((p) => {
+      {list.map((p) => {
         const s = brain.status[p.id];
         const off = p.kind === 'Cloud' && !online;
         return (
@@ -53,15 +57,21 @@ export function ProviderPanel({ variant = 'chips' }) {
             key={p.id}
             aria-pressed={brain.prefer === p.id}
             data-ok={!!s?.ok && !off}
+            data-front={brain.active === p.id || undefined}
             title={`${p.kind} · ${p.note} — ${off ? 'offline' : s?.detail || 'not checked yet'}`}
             onClick={() => (!s?.ok && s?.can ? loadLocal(p.id) : p.id === 'ollama' && !s?.ok ? run('use ollama') : choose(p.id))}
           >
             <i />
-            {variant === 'chips' ? p.label.split(' ')[0] : p.label}
+            {p.label}
             {variant !== 'chips' && <em>{off ? 'offline' : s?.detail || p.kind}</em>}
           </button>
         );
       })}
+      {!keys && (
+        <button type="button" className="jv2__addkeys" onClick={() => run('add keys')}>
+          + add keys
+        </button>
+      )}
       {variant !== 'chips' && (
         <button type="button" className="jprov__rerun" onClick={() => run('setup')}>
           Re-run setup
@@ -77,6 +87,12 @@ const Mic = () => (
   <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
     <rect x="9" y="3" width="6" height="12" rx="3" />
     <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </svg>
+);
+
+const Wave = () => (
+  <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+    <path d="M3 12h2M7 8v8M11 5v14M15 8v8M19 11v2" />
   </svg>
 );
 
@@ -109,18 +125,22 @@ const JarvisConsole = forwardRef(function JarvisConsole({ compact = false }, inp
     input?.current?.focus();
   };
   const micUnavailable = !j.canListen ? 'Voice input isn’t supported in this browser — try Chrome or Edge' : !j.online ? 'Voice input needs the internet in this browser' : '';
+  const typing = j.busy && !j.log.some((m) => m.streaming && (m.text || m.tool));
 
   return (
     <div className="jv2__term" data-compact={compact}>
       {!compact && (
         <div className="jv2__bar">
           <span className="mono">jarvis@rahat-os</span>
-          <span className="jv2__cost mono">$0 · no keys in browser</span>
+          <span className="jv2__cost mono">{j.keys ? `${j.keys} key${j.keys > 1 ? 's' : ''} · this device only` : 'no keys in the site'}</span>
           {j.canSpeak && (
             <button type="button" className="jv2__tog" aria-pressed={j.speak} onClick={() => j.toggleVoice(!j.speak)}>
               {j.speak ? 'voice on' : 'voice off'}
             </button>
           )}
+          <button type="button" className="jv2__tog" aria-pressed={j.lang === 'bn-BD'} onClick={() => j.setLang(j.lang === 'bn-BD' ? 'en-US' : 'bn-BD')} title="Speech language (English / বাংলা)">
+            {j.lang === 'bn-BD' ? 'বাং' : 'EN'}
+          </button>
         </div>
       )}
       <div className="jv2__log" ref={body} aria-live="polite">
@@ -133,7 +153,7 @@ const JarvisConsole = forwardRef(function JarvisConsole({ compact = false }, inp
         {j.log.map((m) => (
           <Message key={m.id} m={m} onPick={pick} />
         ))}
-        {j.busy && (
+        {typing && (
           <p className="jv2__typing" data-who="ai">
             <span className="jv2__who">◆</span>
             <span>
@@ -163,7 +183,7 @@ const JarvisConsole = forwardRef(function JarvisConsole({ compact = false }, inp
           ref={input}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder={j.listening ? 'Listening…' : 'Ask J.A.R.V.I.S. anything, or “help”'}
+          placeholder={j.listening ? (j.hands ? 'Say “Jarvis, …”' : 'Listening…') : j.lang === 'bn-BD' ? 'কিছু জিজ্ঞেস করুন, বা “help”' : 'Ask J.A.R.V.I.S. anything, or “help”'}
           aria-label="Message J.A.R.V.I.S."
           autoComplete="off"
           spellCheck="false"
@@ -191,8 +211,19 @@ const JarvisConsole = forwardRef(function JarvisConsole({ compact = false }, inp
         />
         <button
           type="button"
+          className="jv2__hf"
+          data-on={j.hands}
+          onClick={() => j.setHandsFree(!j.hands)}
+          disabled={!!micUnavailable}
+          aria-label={j.hands ? 'Turn hands-free off' : 'Hands-free: always listening for “Jarvis”'}
+          title={micUnavailable || 'Hands-free — wake word “Jarvis”'}
+        >
+          <Wave />
+        </button>
+        <button
+          type="button"
           className="jv2__mic"
-          data-on={j.listening}
+          data-on={j.listening && !j.hands}
           onClick={j.listen}
           disabled={!!micUnavailable}
           aria-label={micUnavailable || (j.listening ? 'Stop listening' : 'Speak a command')}
@@ -241,9 +272,10 @@ function Message({ m, onPick }) {
       </div>
     );
   return (
-    <div className="jv2__msg" data-who={m.who} data-error={!!m.error}>
+    <div className="jv2__msg" data-who={m.who} data-error={!!m.error} data-streaming={m.streaming || undefined}>
       <span className="jv2__who" title={m.source === 'voice' ? 'spoken' : undefined}>{m.who === 'me' ? (m.source === 'voice' ? '◉' : '›') : m.who === 'ai' ? '◆' : '#'}</span>
       <div>
+        {m.tool && !m.text && <span className="jv2__toolrun mono">running {m.tool}…</span>}
         {m.who === 'ai' ? <Rich text={m.text} /> : <span>{m.text}</span>}
         {m.list && (
           <ul className="jv2__list">
@@ -319,8 +351,13 @@ function Message({ m, onPick }) {
           </div>
         )}
         {m.form === 'notion' && <NotionForm pin={j.pin} push={j.push} />}
-        {m.form === 'aikey' && <KeyForm pin={j.pin} push={j.push} />}
-        {m.via && <small className="jv2__via mono">via {m.via}</small>}
+        {m.form === 'keys' && <KeysForm pin={j.pin} push={j.push} setBrain={j.setBrain} />}
+        {m.via && (
+          <small className="jv2__via mono">
+            via {m.via}
+            {m.ms ? ` · ${(m.ms / 1000).toFixed(1)} s` : ''}
+          </small>
+        )}
       </div>
     </div>
   );
@@ -353,33 +390,54 @@ function NotionForm({ pin, push }) {
   );
 }
 
-function KeyForm({ pin, push }) {
-  const [kind, setKind] = useState('gemini');
-  const [key, setKey] = useState('');
-  const [state, setState] = useState('');
+/* Paste-anything key form. Keys are detected by prefix, kept in this
+   browser, and (optionally, owner only) copied to the Apps Script bridge so
+   other devices can use them server-side. */
+function KeysForm({ pin, push, setBrain }) {
+  const [text, setText] = useState('');
+  const [share, setShare] = useState(false);
+  const [msg, setMsg] = useState('');
+  const found = parseKeys(text);
+  const n = Object.keys(found).length;
   const submit = async (e) => {
     e.preventDefault();
-    setState('Saving and testing…');
-    try {
-      const j = await bridge({ a: 'setkey', pin, kind, key: key.trim() });
-      setKey('');
-      setState('done');
-      push({ who: 'ai', text: `Key stored on the bridge and tested. Server-side models: ${j.ai.join(', ')}. Say “setup” to re-rank.` });
-    } catch (x) {
-      setState(x.message);
+    if (!n) return setMsg('No key recognised. Paste the full key(s).');
+    addKeys(found);
+    setText('');
+    setMsg('Checking…');
+    const b = await refreshKeyed();
+    setBrain(b);
+    const lines = Object.entries(found).map(([k, v]) => `${KEY_KINDS[k].label} ${mask(v)}: ${b.status[BRAINS.find((x) => x.key === k)?.id]?.detail || 'stored'}`);
+    if (share && pin) {
+      for (const [k, v] of Object.entries(found)) {
+        if (!['gemini', 'groq', 'unikey', 'opencode'].includes(k)) continue;
+        try {
+          await bridge({ a: 'setkey', pin, kind: k, key: v });
+          lines.push(`${KEY_KINDS[k].label}: copied to the bridge`);
+        } catch (x) {
+          lines.push(`${KEY_KINDS[k].label}: bridge — ${x.message}`);
+        }
+      }
     }
+    setMsg('done');
+    push({ who: 'ai', text: `Keys saved on this device.\n${lines.map((l) => `- ${l}`).join('\n')}\n${available().length} brains online — primary **${brainById(activeProvider())?.label || 'none'}**. Say “switch brain” to change.` });
   };
-  if (state === 'done') return null;
+  if (msg === 'done') return null;
   return (
     <form className="jv2__form" onSubmit={submit}>
-      <select value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Provider">
-        <option value="gemini">Google Gemini (free tier)</option>
-        <option value="groq">Groq (free tier)</option>
-        <option value="pollinations">Pollinations (free account)</option>
-      </select>
-      <input type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="API key" autoComplete="off" required />
-      <button type="submit">Save key</button>
-      {state && <small>{state}</small>}
+      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste keys here — e.g. sk-…, gsk_…, AQ.…, AIza…, oc_sk_…" rows={3} autoComplete="off" spellCheck="false" aria-label="API keys" />
+      <div className="jv2__found mono">
+        {n ? Object.entries(found).map(([k, v]) => <span key={k}>✓ {KEY_KINDS[k].label} {mask(v)}</span>) : <span className="is-hint">keys are recognised as you paste</span>}
+      </div>
+      {pin && (
+        <label className="jv2__chk">
+          <input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} /> also store on my bridge for other devices
+        </label>
+      )}
+      <button type="submit" disabled={!n}>
+        Save {n || ''} key{n === 1 ? '' : 's'}
+      </button>
+      {msg && <small>{msg}</small>}
     </form>
   );
 }

@@ -25,6 +25,8 @@ import { parsePipe, parseConvert } from './engineering';
 import { execute } from '../os/actions';
 import { searchIndex, parseQuery } from '../os/searchIndex';
 import { sections, person, experience, education, contact } from '../data/site';
+import { switchBrain, brainState, BRAINS, available } from './brain';
+import { keyKinds, forgetKeys, KEY_KINDS } from './keys';
 
 const LABS = { rocket: 'rocket', car: 'auto', auto: 'auto', systems: 'systems', gear: 'systems', pipe: 'pipe', sewer: 'pipe', hydraulics: 'pipe', beam: 'beam', engine: 'engine', turbofan: 'engine', jet: 'engine' };
 const act = (tool, args = {}) => (a, ctx) => execute({ tool, arguments: typeof args === 'function' ? args(a) : args }, ctx);
@@ -54,9 +56,19 @@ const notes = {
   },
 };
 
+/* Returns false when the browser blocked the pop-up — voice commands have no
+   click behind them, so the caller then offers a one-tap button instead. */
 function openTab(url) {
-  window.open(url, '_blank', 'noopener,noreferrer');
+  const w = window.open(url, '_blank');
+  if (!w) return false;
+  try {
+    w.opener = null;
+  } catch {
+    /* cross-origin already */
+  }
+  return true;
 }
+const opened = (url, text, title) => (openTab(url) ? { text } : { text: `${text.replace(/ (are|is) open\.$/, '')} — tap to open (the browser blocked the automatic tab).`, confirm: { title: title || 'Open it now?', detail: url, yes: () => (openTab(url), { text: 'Opened.' }) } });
 const confirmOpen = (url, title) => ({
   text: `Ready to open ${new URL(url).host}.`,
   confirm: { title: title || 'Open this page?', detail: url, yes: () => (openTab(url), { text: `Opened ${new URL(url).host}.` }) },
@@ -244,7 +256,7 @@ export const TOOLS = [
       const m = raw.match(/^(?:youtube|yt|search youtube for|find on youtube|play)\s+(.+)$/i) || raw.match(/^(.+?)\s+on youtube$/i);
       return m ? { q: m[1] } : null;
     },
-    run: ({ q }) => (openTab(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`), { text: `YouTube results for “${q}” are open.` }),
+    run: ({ q }) => opened(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`, `YouTube results for “${q}” are open.`, 'Open YouTube?'),
   },
   {
     id: 'google', label: 'Google', stage: 'execute', needsNet: true, help: ['google <query>', 'open a Google search tab'],
@@ -252,7 +264,7 @@ export const TOOLS = [
       const m = raw.match(/^(?:google|search google for|open google for)\s+(.+)$/i);
       return m ? { q: m[1] } : null;
     },
-    run: ({ q }) => (openTab(`https://www.google.com/search?q=${encodeURIComponent(q)}`), { text: `Google results for “${q}” are open.` }),
+    run: ({ q }) => opened(`https://www.google.com/search?q=${encodeURIComponent(q)}`, `Google results for “${q}” are open.`, 'Open Google?'),
   },
   {
     id: 'openurl', label: 'Open URL', stage: 'execute', help: ['open <url>', 'any https link (asks first)'],
@@ -427,21 +439,6 @@ export const TOOLS = [
     },
   },
 
-  {
-    id: 'aikey', label: 'AI key', stage: 'execute', help: ['set ai key', 'owner: store a free Gemini / Groq key server-side'],
-    match: (s) => (/^(set|add|store|save) (an? )?(ai|gemini|groq|pollinations) key$/.test(s) ? {} : null),
-    run: async (a, ctx) => {
-      if (!ctx.pin) return { text: 'Owner only. Say “unlock” first.' };
-      const st = await bridgeStatus();
-      if (st.unauth) return { text: 'The bridge needs its one-time Google authorisation first: open it, choose authorize, press Run.', sources: [{ title: 'Jarvis Notion Bridge — Apps Script', url: BRIDGE_EDITOR }] };
-      if (st.ok && !st.pin) await bridge({ a: 'setup', pin: ctx.pin });
-      return {
-        form: 'aikey',
-        text: 'Paste a free key. It is sent once to your Apps Script bridge, tested, and never shown again. Gemini (aistudio.google.com/apikey) and Groq (console.groq.com/keys) are free with no card.',
-      };
-    },
-  },
-
   /* --------------------------------------------------------- bookmarks --- */
   {
     id: 'bookmark-import', label: 'Import bookmarks', stage: 'execute', help: ['import bookmarks', 'Chrome HTML or Raindrop CSV'],
@@ -503,10 +500,137 @@ export const TOOLS = [
     },
   },
 
+  /* ------------------------------------------------------ brain + voice --- */
+  {
+    id: 'brain', label: 'Brain', stage: 'execute', help: ['switch brain · use claude · brains', 'change the AI model by voice'],
+    match: (s) => {
+      if (/^(brains|models|list (brains|models)|which (brain|model)( are you using| is active)?|what (brain|model) are you( using)?)\??$/.test(s)) return { list: true };
+      if (/\b(switch|change|swap|next|rotate|another)\b.*\b(brain|model|ai)\b|\b(brain|model)\b.*\b(switch|change|next)\b|(ব্রেন|মডেল|brain).*(চেঞ্জ|বদলাও|বদল|পরিবর্তন|change)/.test(s)) {
+        const to = s.match(/\bto\s+(.+)$/);
+        return { to: to ? to[1].replace(/\s+(brain|model|ai)$/, '') : 'next' };
+      }
+      const m = s.match(/^(?:use|switch to|talk with|talk to|go with|use the)\s+(.+?)(?:\s+(?:brain|model|ai))?$/);
+      if (m && (m[1] === 'auto' || BRAINS.some((b) => b.alias.test(m[1]) || b.label.toLowerCase() === m[1]))) return { to: m[1] };
+      return null;
+    },
+    run: ({ list, to }, ctx) => {
+      if (list) {
+        const st = brainState();
+        const av = available();
+        return {
+          text: av.length ? `Thinking with ${BRAINS.find((b) => b.id === st.active)?.label || 'nothing'}${st.prefer === 'auto' ? ' (auto)' : ''}. ${av.length} brains online:` : 'No brain online yet — say “add keys”.',
+          list: BRAINS.map((b) => `${st.status[b.id]?.ok ? '●' : '○'} ${b.label} — ${b.vendor} · ${st.status[b.id]?.ok ? b.note : st.status[b.id]?.detail || 'not checked'}`),
+        };
+      }
+      if (!available().length) return { text: 'No brain is online yet. Say “add keys” and paste your API keys once — or “enable browser ai”.' };
+      if (to === 'next' && available().length === 1) return { text: `Only ${BRAINS.find((b) => b.id === available()[0]).label} is online right now.` };
+      const b = switchBrain(to);
+      ctx.brainChanged?.();
+      if (!b) return { text: `I don't know a brain called “${to}”. Say “brains” for the list.` };
+      if (b.unavailable) return { text: `${b.label} is not available: ${b.unavailable}.` };
+      return { text: to === 'auto' ? `Auto mode. Best brain right now: ${b.label}.` : `Brain switched. I'm now ${b.label}, via ${b.vendor}.` };
+    },
+  },
+  {
+    id: 'keys', label: 'AI keys', stage: 'execute', help: ['add keys · keys · forget keys', 'paste AI keys once on this device'],
+    match: (s) =>
+      /^(add|paste|set|save|enter|update)( my| the| ai| api)* keys?$|^(set|add|store|save) (an? )?(ai|api|gemini|groq|unikey|opencode|openrouter) key$/.test(s)
+        ? { add: true }
+        : /^(ai keys|my (ai |api )?keys|api keys|key status|show (my )?(ai |api )?keys)$/.test(s)
+          ? { show: true }
+          : /^(forget|remove|delete|clear) (all |my )?(ai |api )?keys$/.test(s)
+            ? { forget: true }
+            : null,
+    run: ({ show, forget }) => {
+      const k = keyKinds();
+      if (forget)
+        return {
+          text: `This removes ${k.length} keys from this browser.`,
+          confirm: { title: 'Forget all AI keys on this device?', detail: k.map((x) => KEY_KINDS[x]?.label || x).join(', ') || 'none stored', yes: () => (forgetKeys(), { text: 'Keys removed from this device.' }) },
+        };
+      if (show) return { text: k.length ? `Keys on this device: ${k.map((x) => KEY_KINDS[x]?.label || x).join(', ')}.` : 'No keys on this device yet.', form: 'keys' };
+      return { form: 'keys', text: 'Paste your keys — any format, all at once. I recognise Unikey, Groq, Google AI Studio, OpenRouter and OpenCode by prefix. They stay in this browser and go straight to each provider.' };
+    },
+  },
+  {
+    id: 'voice', label: 'Voice', stage: 'execute', help: ['hands free · stop listening · speak bangla', 'always-on voice with wake word “Jarvis”'],
+    match: (s) => {
+      if (/^(hands ?free|always listen(ing)?|wake word|voice mode|conversation mode|listen always|start listening|hey jarvis mode)( on)?$/.test(s)) return { hands: true };
+      if (/^(stop listening|hands ?free off|voice mode off|go to sleep|sleep|stop voice)$/.test(s)) return { hands: false };
+      if (/^(stop|shut up|quiet|silence|be quiet|চুপ( করো)?|থামো)$/.test(s)) return { hush: true };
+      if (/^(speak|talk|reply|answer)( in)? (bangla|bengali)$|^বাংলা(য়)?( বলো| কথা বলো)?$/.test(s)) return { lang: 'bn-BD' };
+      if (/^(speak|talk|reply|answer)( in)? english$|^ইংরেজি(তে)?( বলো)?$/.test(s)) return { lang: 'en-US' };
+      if (/^(mute|voice off|don'?t speak)$/.test(s)) return { mute: true };
+      if (/^(unmute|voice on|speak to me)$/.test(s)) return { unmute: true };
+      return null;
+    },
+    run: (a, ctx) => ctx.voice(a),
+  },
+  {
+    id: 'float', label: 'Jarvis mode', stage: 'execute', help: ['jarvis mode · minimise', 'full-screen assistant over any page'],
+    match: (s) => (/^(jarvis mode|full ?screen|focus mode|expand|pop ?out|float)$/.test(s) ? { on: true } : /^(minimi[sz]e|dock|close jarvis|exit (jarvis mode|full ?screen)|collapse)$/.test(s) ? { on: false } : null),
+    run: ({ on }) => (window.dispatchEvent(new CustomEvent('rh-jv-float', { detail: on })), { text: on ? 'Jarvis mode — the console fills the screen over any page. Esc or “minimise” docks it.' : 'Docked.' }),
+  },
+  {
+    id: 'tool-add', label: 'Add to index', stage: 'execute', help: ['add this tool <url> [as <name>]', 'save a link to your index or bookmarks'],
+    match: (s, raw, ctx) => {
+      if (!/\b(add|save|put|include)\b/i.test(raw) || /\bnotes?\b|\bremember\b|\bfavou?rites?\b|\bquick tools\b/i.test(raw)) return null;
+      const u = raw.match(/(https?:\/\/\S+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}(?:\/\S*)?)/i);
+      // Without a link in the sentence, only an explicit "tool / index /
+      // bookmark" request may reuse the last link from the conversation.
+      if (!u && !/\b(tools?|index|bookmarks?)\b/i.test(raw)) return null;
+      if (u && !/\b(tools?|index|bookmarks?|link|site|website|this|that|it)\b/i.test(raw)) return null;
+      const url = u ? cleanUrl(/^https?:/i.test(u[1]) ? u[1].replace(/[).,]+$/, '') : `https://${u[1].replace(/[).,]+$/, '')}`) : ctx.lastUrl?.();
+      if (!url) return /^(add|save) (this|that|it)( tool| link)?( to (my )?(index|bookmarks?|tools))?$/.test(s) ? { need: true } : null;
+      const name = raw.match(/\b(?:as|named|called)\s+["“]?([^"”]+?)["”]?(?:\s+(?:in|to|into)\s+.+)?$/i);
+      const bookmark = /\bbookmark/i.test(raw) && !/\btool\b/i.test(raw);
+      return { url, name: name?.[1], bookmark };
+    },
+    run: async ({ url, name, bookmark, need }, ctx) => {
+      if (need) return { text: 'Which link? Say or paste it, e.g. “add this tool https://example.com”.' };
+      if (!ctx.pin)
+        return {
+          text: 'Adding to the index is owner-only. Unlock with your PIN, then ask again.',
+          confirm: { title: 'Unlock owner mode now?', detail: 'Opens the PIN prompt in the Tools panel', yes: () => (ctx.scrollTo('tools'), setTimeout(() => window.dispatchEvent(new Event('rh-unlock')), 400), { text: 'Enter your PIN, then repeat the request.' }) },
+        };
+      const host = new URL(url).host.replace(/^www\./, '');
+      if (ctx.tools.some((t) => cleanUrl(t.url) === url)) return { text: `${host} is already in your index.` };
+      let info = { name: name || '', category: '', description: '' };
+      if (!name) {
+        try {
+          const r = await ctx.think([
+            { role: 'system', content: 'Return JSON only: {"name":"short product name","category":"one or two words","description":"one sentence"} for the given website. If unsure, infer from the domain.' },
+            { role: 'user', content: url },
+          ]);
+          info = { ...info, ...JSON.parse(r.text.match(/\{[\s\S]*\}/)[0]) };
+        } catch {
+          /* fall back to the host name */
+        }
+      }
+      const title = String(info.name || host.split('.')[0].replace(/^\w/, (c) => c.toUpperCase())).slice(0, 60);
+      const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) + '-' + Date.now().toString(36).slice(-4);
+      const tool = bookmark
+        ? { id, name: title, url, kind: 'Bookmark', project: 'Bookmarks', category: 'Bookmarks', description: String(info.description || '').slice(0, 200), visibility: 'private' }
+        : { id, name: title, url, kind: 'Tool', project: 'Personal', category: String(info.category || 'Web').slice(0, 30), description: String(info.description || host).slice(0, 200), visibility: 'private' };
+      return {
+        text: `Ready to add ${title} (${host}) to your ${bookmark ? 'bookmarks' : 'tool index'}.`,
+        confirm: {
+          title: `Add “${title}”?`,
+          detail: `${url} · private (make it public from the Tools panel)`,
+          yes: async () => {
+            await ctx.post({ a: 'upsert', pin: ctx.pin, tool });
+            await ctx.refresh();
+            return { text: `Added ${title} to your ${bookmark ? 'bookmarks' : 'index'}. Say “open ${title.toLowerCase()}” any time.`, sources: [{ title, url }] };
+          },
+        },
+      };
+    },
+  },
+
   /* ----------------------------------------------------------- diagnostics --- */
   {
-    id: 'setup', label: 'Setup', stage: 'execute', help: ['setup · enable chrome ai · load local model', 're-run setup, add free on-device AI'],
-    match: (s) => (/^(setup|diagnostics?|self ?test|status|models?|ai status)$/.test(s) ? {} : /^(load|download|start) (local|offline|webllm) (model|ai)$/.test(s) ? { webllm: true } : /^(use|check|enable) ollama$/.test(s) ? { ollama: true } : /^(enable|download|use|start) (chrome|on-device|nano|gemini nano)( ai| model)?$/.test(s) ? { chromeai: true } : null),
+    id: 'setup', label: 'Setup', stage: 'execute', help: ['setup · enable browser ai · load local model', 're-run setup, add free on-device AI'],
+    match: (s) => (/^(setup|diagnostics?|self ?test|status|models?|ai status)$/.test(s) ? {} : /^(load|download|start) (local|offline|webllm) (model|ai)$/.test(s) ? { webllm: true } : /^(use|check|enable) ollama$/.test(s) ? { ollama: true } : /^(enable|download|use|start) (chrome|edge|browser|on-device|nano|gemini nano|phi)( ai| model)?$/.test(s) ? { chromeai: true } : null),
     run: ({ webllm, ollama, chromeai }) => {
       if (chromeai) return { chromeai: true };
       if (ollama)
@@ -544,7 +668,7 @@ export const MODEL_CALLABLE = ['weather', 'price', 'news', 'search', 'calc', 'ti
 // Match order: explicit verbs first, specific parsers (engineering, units)
 // before the generic calculator, loose keyword matchers (weather, price, news,
 // search) after, the fuzzy opener last.
-const ORDER = ['help', 'setup', 'aikey', 'notion', 'remember', 'recall', 'notes', 'bookmark-import', 'bookmark-add', 'bookmark-list', 'file', 'clipboard', 'history', 'favorites', 'install', 'palette', 'motion', 'lab', 'theme', 'vault', 'unlock', 'showtools', 'go', 'youtube', 'google', 'openurl', 'pipe', 'convert', 'calc', 'time', 'price', 'weather', 'news', 'about', 'search', 'find', 'open'];
+const ORDER = ['help', 'voice', 'brain', 'keys', 'float', 'setup', 'notion', 'tool-add', 'remember', 'recall', 'notes', 'bookmark-import', 'bookmark-add', 'bookmark-list', 'file', 'clipboard', 'history', 'favorites', 'install', 'palette', 'motion', 'lab', 'theme', 'vault', 'unlock', 'showtools', 'go', 'youtube', 'google', 'openurl', 'pipe', 'convert', 'calc', 'time', 'price', 'weather', 'news', 'about', 'search', 'find', 'open'];
 const SORTED = ORDER.map((id) => TOOLS.find((t) => t.id === id)).concat(TOOLS.filter((t) => !ORDER.includes(t.id)));
 
 export function route(raw, ctx) {

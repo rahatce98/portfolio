@@ -39,6 +39,7 @@ export default function JarvisDock() {
   const scrollTo = useScrollTo();
   const [open, setOpen] = useState(false);
   const [adv, setAdv] = useState(false);
+  const [full, setFull] = useState(false);
   const input = useRef(null);
   const orb = useRef(null);
 
@@ -57,6 +58,7 @@ export default function JarvisDock() {
   const hide = useCallback(() => {
     setOpen(false);
     setAdv(false);
+    setFull(false);
     orb.current?.focus({ preventScroll: true });
   }, []);
 
@@ -70,6 +72,15 @@ export default function JarvisDock() {
     };
     const onOpen = () => show();
     const onReveal = () => !open && show(false);
+    // "Jarvis mode": the dock fills the screen over whatever page is showing.
+    const onFull = (e) => {
+      if (e.detail === false) return setFull(false);
+      j.boot();
+      setOpen(true);
+      setFull(true);
+      setTimeout(() => input.current?.focus({ preventScroll: true }), 60);
+    };
+    window.addEventListener('rh-jv-float', onFull);
     window.addEventListener('keydown', onKey);
     window.addEventListener('rh-jarvis', onOpen);
     window.addEventListener('rh-jarvis-reveal', onReveal);
@@ -77,8 +88,9 @@ export default function JarvisDock() {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('rh-jarvis', onOpen);
       window.removeEventListener('rh-jarvis-reveal', onReveal);
+      window.removeEventListener('rh-jv-float', onFull);
     };
-  }, [open, show, hide]);
+  }, [open, show, hide, j]);
 
   // PWA shortcut / deep link: /portfolio/?jarvis=1
   useEffect(() => {
@@ -88,13 +100,13 @@ export default function JarvisDock() {
 
   // The sheet owns the screen on phones: lock the page behind it.
   useEffect(() => {
-    if (!(open && sheet)) return;
+    if (!(open && (sheet || full))) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [open, sheet]);
+  }, [open, sheet, full]);
 
   const quick = pins.map((id) => j.tools.find((t) => t.id === id)).filter(Boolean).slice(0, 8);
   const recent = history.slice(0, 3);
@@ -119,13 +131,14 @@ export default function JarvisDock() {
         {!j.online && <span className="orb__off" aria-hidden="true" />}
       </button>
 
-      {open && sheet && <div className="jdock__scrim" onPointerDown={hide} aria-hidden="true" />}
+      {open && (sheet || full) && <div className="jdock__scrim" data-full={full || undefined} onPointerDown={hide} aria-hidden="true" />}
 
       <div
         id="jdock"
         className="jdock"
         data-open={open}
         data-sheet={sheet}
+        data-full={full || undefined}
         data-state={j.state}
         role="dialog"
         aria-modal={sheet ? 'true' : undefined}
@@ -147,6 +160,9 @@ export default function JarvisDock() {
             )}
             <button type="button" className="jdock__btn" aria-pressed={adv} onClick={() => setAdv((v) => !v)} title="Advanced AI settings" aria-label="Advanced AI settings">
               <I d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></>} />
+            </button>
+            <button type="button" className="jdock__btn" aria-pressed={full} onClick={() => setFull((v) => !v)} title={full ? 'Exit Jarvis mode' : 'Jarvis mode (full screen)'} aria-label={full ? 'Exit Jarvis mode' : 'Jarvis mode (full screen)'}>
+              <I d={full ? <path d="M9 3v6H3M15 21v-6h6M9 9 3 3M15 15l6 6" /> : <path d="M3 9V3h6M21 15v6h-6M3 3l7 7M21 21l-7-7" />} />
             </button>
             <button type="button" className="jdock__btn" onClick={() => (hide(), scrollTo('jarvis'))} title="Open the full console" aria-label="Open the full J.A.R.V.I.S. console">
               <I d={<path d="M15 3h6v6M21 3l-7 7M9 21H3v-6M3 21l7-7" />} />

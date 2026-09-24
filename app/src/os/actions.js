@@ -204,6 +204,17 @@ export const ACTIONS = {
       return { text: `${n} tools in the index${favs ? `, ${favs} starred` : ''}. Type to filter, or say “open <tool>”.` };
     },
   },
+  addLink: {
+    label: 'Save a link to the tool index or bookmarks (owner; asks first)',
+    schema: { url: str(true, 2000), name: str(false, 80), bookmark: { type: 'boolean' } },
+    validate: ({ url }) => /^https?:\/\//i.test(url) || 'only http(s) links',
+    run: ({ url, name, bookmark }, env) => env.say(`add this ${bookmark ? 'bookmark' : 'tool'} ${url}${name ? ` as ${name}` : ''}`),
+  },
+  switchBrain: {
+    label: 'Switch the AI model J.A.R.V.I.S. thinks with',
+    schema: { to: str(false, 60) },
+    run: ({ to }, env) => env.say(to ? `use ${to}` : 'switch brain'),
+  },
   addTool: {
     label: 'Add a tool to the index (owner)',
     schema: {},
