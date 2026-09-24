@@ -97,10 +97,32 @@
         if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
         if (localStorage.getItem('rh-motion') === 'reduce') document.documentElement.setAttribute('data-motion', 'reduce');
       } catch (e) {}
+      // A stale cached page can point at a bundle a newer deploy replaced.
+      // If the app script fails to load, reload once from the network.
+      window.addEventListener(
+        'error',
+        function (e) {
+          var s = e.target;
+          if (!s || s.tagName !== 'SCRIPT' || !/\/build\//.test(s.src || '')) return;
+          try {
+            if (sessionStorage.getItem('rh-boot-retry')) return;
+            sessionStorage.setItem('rh-boot-retry', '1');
+          } catch (x) {
+            return;
+          }
+          location.reload();
+        },
+        true,
+      );
+      setTimeout(function () {
+        try {
+          sessionStorage.removeItem('rh-boot-retry');
+        } catch (x) {}
+      }, 20000);
     </script>
-    <script type="module" crossorigin src="/portfolio/build/index-DVSqg4HP.js"></script>
-    <link rel="modulepreload" crossorigin href="/portfolio/build/react-2aQwQ186.js">
-    <link rel="stylesheet" crossorigin href="/portfolio/build/index--WZf0S3I.css">
+    <script type="module" crossorigin src="/portfolio/build/index-dy1PoWV2.js"></script>
+    <link rel="modulepreload" crossorigin href="/portfolio/build/react-Ek6MvlVl.js">
+    <link rel="stylesheet" crossorigin href="/portfolio/build/index-Cu4B873k.css">
   </head>
 
   <body>

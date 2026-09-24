@@ -140,6 +140,7 @@ export function JarvisProvider({ children }) {
   const [booted, setBooted] = useState(false);
   const [keys, setKeys] = useState(() => keyKinds().length);
   const [speak, setSpeak] = useState(() => ls.get('rh-jv-voice', '0') === '1');
+  const [full, setFull] = useState(false); // HUD over the whole screen
 
   const level = useRef(0);
   const convo = useRef([]);
@@ -150,13 +151,14 @@ export function JarvisProvider({ children }) {
   const bootedRef = useRef(false);
   const runRef = useRef(null);
   const listenerRef = useRef(null);
+  const logHasLoader = useRef(false);
 
   const canListen = canRecognise || canRecord;
   const canSpeak = CAN_SPEAK;
 
   const push = useCallback((m) => {
     const id = m.id || Math.random().toString(36).slice(2);
-    setLog((l) => [...l, { ...m, id }].slice(-120));
+    setLog((l) => [...l, { at: Date.now(), ...m, id }].slice(-120));
     return id;
   }, []);
   const patch = useCallback((id, p) => setLog((l) => l.map((m) => (m.id === id ? { ...m, ...p } : m))), []);
@@ -322,6 +324,44 @@ export function JarvisProvider({ children }) {
     push({ who: 'ai', text: `${greet()}. I’m J.A.R.V.I.S. — open tools, projects and labs, run engineering calculations, search this site or the web. Say “switch brain” to change model, “hands free” for always-on voice. Running auto setup…` });
     runSetup();
   }, [push, runSetup]);
+
+  /* The owner's local "JARVIS Key Loader.html" (a file on their own disk, never
+     in the site) opens this page and posts the keys. file:// pages have the
+     origin "null"; anything else is ignored, and nothing is stored until the
+     owner confirms the masked list. */
+  useEffect(() => {
+    const on = (e) => {
+      if (e.origin !== 'null' || e.data?.type !== 'rh-jv-keyload') return;
+      const found = parseKeys(Object.values(e.data.keys || {}).join(' '));
+      const n = Object.keys(found).length;
+      if (!n) return;
+      const src = e.source;
+      src?.postMessage({ type: 'rh-jv-keyload-seen' }, '*');
+      if (logHasLoader.current) return; // one card per page load
+      logHasLoader.current = true;
+      boot();
+      window.dispatchEvent(new Event('rh-jarvis'));
+      const masks = Object.entries(found).map(([k, v]) => `${KEY_KINDS[k].label} ${mask(v)}`);
+      push({
+        who: 'ai',
+        text: 'Your JARVIS Key Loader wants to save these keys in this browser (they stay on this device only):',
+        list: masks,
+        confirm: {
+          title: `Save ${n} key${n > 1 ? 's' : ''} on this device?`,
+          detail: masks.join(' · '),
+          yes: async () => {
+            addKeys(found);
+            const b = await refreshKeyed();
+            setBrain(b);
+            src?.postMessage({ type: 'rh-jv-keyload-done' }, '*');
+            return { text: `Saved. ${available().length} brains online — primary **${brainById(activeProvider())?.label || 'none'}**. This browser remembers them from now on.` };
+          },
+        },
+      });
+    };
+    window.addEventListener('message', on);
+    return () => window.removeEventListener('message', on);
+  }, [boot, push]);
 
   // Keys pasted anywhere re-rank the brains.
   useEffect(
@@ -725,6 +765,9 @@ export function JarvisProvider({ children }) {
     choose,
     push,
     setBrain,
+    full,
+    setFull,
+    prefill: (t) => window.dispatchEvent(new CustomEvent('rh-jarvis-prefill', { detail: t })),
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

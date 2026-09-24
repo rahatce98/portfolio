@@ -500,6 +500,28 @@ export const TOOLS = [
     },
   },
 
+  {
+    id: 'briefing', label: 'Briefing', stage: 'search', needsNet: true, help: ['briefing', 'executive briefing: time, weather, headlines, notes'],
+    match: (s) => (/^(executive |daily |morning )?briefing$|^brief me|^(good morning|morning),? jarvis$|^(what'?s|whats) (up|new) today\??$/.test(s) ? {} : null),
+    run: async () => {
+      const [w, n] = await Promise.all([weather('Dhaka').catch(() => null), news('').catch(() => null)]);
+      const a = notes.all().slice(0, 5);
+      const now = new Date().toLocaleString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+      const facts = [
+        `Now: ${now}.`,
+        w ? `Weather in ${w.place}: ${Math.round(w.temp)}°C, ${w.sky}, humidity ${w.humidity}%, rain chance today ${w.days?.[0]?.rain ?? 0}%.` : 'Weather: unavailable.',
+        n ? `Headlines (${n.source}):\n${n.items.slice(0, 8).map((x) => `- ${x.title}`).join('\n')}` : 'Headlines: unavailable.',
+        a.length ? `Owner's notes:\n${a.map((x) => `- ${x.t}`).join('\n')}` : '',
+      ].filter(Boolean);
+      return {
+        text: 'Executive briefing.',
+        sources: [...(w ? [{ title: 'Open-Meteo', url: 'https://open-meteo.com' }] : []), ...(n ? n.items.slice(0, 4) : [])],
+        summarize: `Give the owner a crisp executive briefing (5-7 short lines): greeting for the time of day, weather and what to plan around it, the 3 most important headlines in one line each, and any notes to act on. Use only this data.\n${facts.join('\n')}`,
+        show: true,
+      };
+    },
+  },
+
   /* ------------------------------------------------------ brain + voice --- */
   {
     id: 'brain', label: 'Brain', stage: 'execute', help: ['switch brain · use claude · brains', 'change the AI model by voice'],
@@ -668,7 +690,7 @@ export const MODEL_CALLABLE = ['weather', 'price', 'news', 'search', 'calc', 'ti
 // Match order: explicit verbs first, specific parsers (engineering, units)
 // before the generic calculator, loose keyword matchers (weather, price, news,
 // search) after, the fuzzy opener last.
-const ORDER = ['help', 'voice', 'brain', 'keys', 'float', 'setup', 'notion', 'tool-add', 'remember', 'recall', 'notes', 'bookmark-import', 'bookmark-add', 'bookmark-list', 'file', 'clipboard', 'history', 'favorites', 'install', 'palette', 'motion', 'lab', 'theme', 'vault', 'unlock', 'showtools', 'go', 'youtube', 'google', 'openurl', 'pipe', 'convert', 'calc', 'time', 'price', 'weather', 'news', 'about', 'search', 'find', 'open'];
+const ORDER = ['help', 'briefing', 'voice', 'brain', 'keys', 'float', 'setup', 'notion', 'tool-add', 'remember', 'recall', 'notes', 'bookmark-import', 'bookmark-add', 'bookmark-list', 'file', 'clipboard', 'history', 'favorites', 'install', 'palette', 'motion', 'lab', 'theme', 'vault', 'unlock', 'showtools', 'go', 'youtube', 'google', 'openurl', 'pipe', 'convert', 'calc', 'time', 'price', 'weather', 'news', 'about', 'search', 'find', 'open'];
 const SORTED = ORDER.map((id) => TOOLS.find((t) => t.id === id)).concat(TOOLS.filter((t) => !ORDER.includes(t.id)));
 
 export function route(raw, ctx) {

@@ -107,12 +107,20 @@ const JarvisConsole = forwardRef(function JarvisConsole({ compact = false }, inp
     body.current?.scrollTo({ top: body.current.scrollHeight, behavior: 'smooth' });
   }, [j.log, j.busy]);
 
-  // Live transcript while the mic is open.
+  // Live transcript while the mic is open; mode buttons prefill the input.
   useEffect(() => {
     const on = (e) => setQ(e.detail || '');
+    const pre = (e) => {
+      setQ(e.detail || '');
+      setTimeout(() => input?.current?.focus({ preventScroll: true }), 30);
+    };
     window.addEventListener('rh-jarvis-interim', on);
-    return () => window.removeEventListener('rh-jarvis-interim', on);
-  }, []);
+    window.addEventListener('rh-jarvis-prefill', pre);
+    return () => {
+      window.removeEventListener('rh-jarvis-interim', on);
+      window.removeEventListener('rh-jarvis-prefill', pre);
+    };
+  }, [input]);
 
   const suggestions = useMemo(() => suggest(q, j.tools), [q, j.tools]);
   const submit = (text) => {

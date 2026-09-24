@@ -8,9 +8,9 @@
  *                       (weather, prices, the Apps Script index, AI) must not
  *                       answer from a stale copy.
  */
-const VERSION = '250e26a628';
+const VERSION = '0cc5499230';
 const BASE = '/portfolio/';
-const PRECACHE = ["/portfolio/","/portfolio/index.html","/portfolio/manifest.webmanifest","/portfolio/tools.json","/portfolio/bookmarks.json","/portfolio/assets/favicon.svg","/portfolio/assets/img/profile.jpg","/portfolio/assets/icons/icon-192.png","/portfolio/assets/icons/icon-512.png","/portfolio/build/Atmosphere-CBYHEa0C.js","/portfolio/build/AutoLab-Df9jxO7G.js","/portfolio/build/BeamLab-qskivzlg.js","/portfolio/build/ControlPanel-xNCRmChX.js","/portfolio/build/EngineLab-BVvzYBB-.js","/portfolio/build/HeroCanvas-DxGDo2kz.js","/portfolio/build/PipeLab-BF3JTLxi.js","/portfolio/build/Rocket-WGRKo6Ev.js","/portfolio/build/RocketLab-BQ6Zp3F-.js","/portfolio/build/Stage-Hgc6uqbZ.js","/portfolio/build/SystemsSection-BmW0l3n8.js","/portfolio/build/__vite-browser-external-BIHI7g3E.js","/portfolio/build/assemblies-BgGuuyCq.js","/portfolio/build/index--WZf0S3I.css","/portfolio/build/index-DVSqg4HP.js","/portfolio/build/r3f-BeTq0b4z.js","/portfolio/build/react-2aQwQ186.js","/portfolio/build/three-Bj-NaVDc.js","/portfolio/build/useDragGuard-DzpeCwAi.js"];
+const PRECACHE = ["/portfolio/","/portfolio/index.html","/portfolio/manifest.webmanifest","/portfolio/tools.json","/portfolio/bookmarks.json","/portfolio/assets/favicon.svg","/portfolio/assets/img/profile.jpg","/portfolio/assets/icons/icon-192.png","/portfolio/assets/icons/icon-512.png","/portfolio/build/Atmosphere-a0-5Ffsr.js","/portfolio/build/AutoLab-ChW4wx7f.js","/portfolio/build/BeamLab-DgTnPgmB.js","/portfolio/build/ControlPanel-DYHtfvGi.js","/portfolio/build/Core3D-Cn5ONhtP.js","/portfolio/build/EngineLab-DUC9XlM5.js","/portfolio/build/HeroCanvas-DeDc1q90.js","/portfolio/build/PipeLab-xu44PyFk.js","/portfolio/build/Rocket-OGAVJMbb.js","/portfolio/build/RocketLab-DX6pzVsv.js","/portfolio/build/Stage-BujraMLU.js","/portfolio/build/SystemsSection-DHSkfXwi.js","/portfolio/build/__vite-browser-external-BIHI7g3E.js","/portfolio/build/assemblies-s9H5e709.js","/portfolio/build/index-Cu4B873k.css","/portfolio/build/index-dy1PoWV2.js","/portfolio/build/r3f-n0XBDWvF.js","/portfolio/build/react-Ek6MvlVl.js","/portfolio/build/three-Cl9kVRY8.js","/portfolio/build/useDragGuard-CIXLhScG.js"];
 const SHELL = `rahat-os-shell-${VERSION}`;
 const RUNTIME = 'rahat-os-runtime';
 
@@ -35,7 +35,9 @@ self.addEventListener('activate', (e) => {
 
 async function networkFirst(req) {
   try {
-    const res = await fetch(req);
+    // no-cache: always revalidate the page with the server, so a fresh deploy
+    // is picked up on the next refresh instead of a 10-minute-old HTTP copy.
+    const res = await fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' });
     if (res.ok) (await caches.open(SHELL)).put(BASE + 'index.html', res.clone());
     return res;
   } catch {

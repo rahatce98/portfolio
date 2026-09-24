@@ -35,7 +35,9 @@ self.addEventListener('activate', (e) => {
 
 async function networkFirst(req) {
   try {
-    const res = await fetch(req);
+    // no-cache: always revalidate the page with the server, so a fresh deploy
+    // is picked up on the next refresh instead of a 10-minute-old HTTP copy.
+    const res = await fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' });
     if (res.ok) (await caches.open(SHELL)).put(BASE + 'index.html', res.clone());
     return res;
   } catch {

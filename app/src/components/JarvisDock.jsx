@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import JarvisCore from '../jarvis/JarvisCore';
 import JarvisConsole, { JarvisStatus, ProviderPanel } from './JarvisConsole';
+import JarvisHUD from './JarvisHUD';
+import { createPortal } from 'react-dom';
 import { useJarvis } from '../jarvis/engine';
 import { usePins } from '../os/favorites';
 import { useHistory, clock } from '../os/history';
@@ -39,7 +41,8 @@ export default function JarvisDock() {
   const scrollTo = useScrollTo();
   const [open, setOpen] = useState(false);
   const [adv, setAdv] = useState(false);
-  const [full, setFull] = useState(false);
+  const full = j.full;
+  const setFull = j.setFull;
   const input = useRef(null);
   const orb = useRef(null);
 
@@ -76,9 +79,8 @@ export default function JarvisDock() {
     const onFull = (e) => {
       if (e.detail === false) return setFull(false);
       j.boot();
-      setOpen(true);
+      setOpen(false);
       setFull(true);
-      setTimeout(() => input.current?.focus({ preventScroll: true }), 60);
     };
     window.addEventListener('rh-jv-float', onFull);
     window.addEventListener('keydown', onKey);
@@ -110,6 +112,8 @@ export default function JarvisDock() {
 
   const quick = pins.map((id) => j.tools.find((t) => t.id === id)).filter(Boolean).slice(0, 8);
   const recent = history.slice(0, 3);
+
+  if (full) return createPortal(<JarvisHUD overlay onClose={() => setFull(false)} />, document.body);
 
   return (
     <>

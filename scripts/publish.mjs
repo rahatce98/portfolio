@@ -10,7 +10,7 @@
  * current build actually produced, and refuses to touch anything on the
  * protected list. It will never delete a path it did not just build.
  */
-import { cp, rm, readdir, stat, writeFile } from 'node:fs/promises';
+import { cp, rm, readdir, stat, writeFile, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -46,13 +46,36 @@ async function main() {
     process.exit(1);
   }
 
-  // Replace only what this build produced.
+  // build/ holds content-hashed bundles. Pages (and browsers) cache index.html
+  // for ~10 minutes, so a page loaded just before a deploy still asks for the
+  // previous hashes — deleting them breaks that refresh. Keep the bundles of
+  // the last KEEP deploys and prune only older ones.
+  const KEEP = 4;
+  const buildDir = path.join(root, 'build');
+  const histFile = path.join(buildDir, '.deploys.json');
+  let hist = [];
+  try {
+    hist = JSON.parse(await readFile(histFile, 'utf8'));
+  } catch {
+    // First run with history: treat everything already there as one deploy.
+    if (existsSync(buildDir)) hist = [(await readdir(buildDir)).filter((f) => !f.startsWith('.'))];
+  }
+  const fresh = existsSync(path.join(dist, 'build')) ? await readdir(path.join(dist, 'build')) : [];
+  hist = [...hist, fresh].slice(-KEEP);
+  const keep = new Set(hist.flat());
+
+  // Replace only what this build produced (build/ is merged, not replaced).
   for (const name of entries) {
+    if (name === 'build') continue;
     const target = path.join(root, name);
     if (existsSync(target)) await rm(target, { recursive: true, force: true });
   }
   for (const name of entries) {
     await cp(path.join(dist, name), path.join(root, name), { recursive: true });
+  }
+  if (existsSync(buildDir)) {
+    for (const f of await readdir(buildDir)) if (!f.startsWith('.') && !keep.has(f)) await rm(path.join(buildDir, f), { force: true });
+    await writeFile(histFile, JSON.stringify(hist));
   }
 
   // Jekyll would otherwise skip any path beginning with an underscore.
