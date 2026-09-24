@@ -298,7 +298,12 @@ export const TOOLS = [
     id: 'search', label: 'Web search', stage: 'search', needsNet: true, help: ['search the web for <anything>', 'DuckDuckGo + Wikipedia, summarised'],
     match: (s, raw) => {
       const m = raw.match(/^(?:search (?:the )?(?:web|internet|online)(?: for)?|web search(?: for)?|look up|lookup|who is|who was|what is|what are|tell me about|define)\s+(.+?)\??$/i);
-      return m && !looksLikeMath(m[1]) ? { q: m[1], ask: raw } : null;
+      if (!m || looksLikeMath(m[1])) return null;
+      // "what is a pile cap?" is a knowledge question: with a brain online the
+      // model answers it (and can still CALL a web search for live facts).
+      // Only an explicit "search the web / look up" forces the search.
+      if (!/^(search|web search|look ?up)/i.test(raw) && available().length) return null;
+      return { q: m[1].replace(/[?.!].*$/, '').trim() || m[1], ask: raw };
     },
     run: ({ q, ask }, ctx) => execute({ tool: 'webSearch', arguments: { query: q, question: ask } }, ctx),
   },

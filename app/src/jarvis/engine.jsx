@@ -653,7 +653,7 @@ export function JarvisProvider({ children }) {
           }
           if (out.webllm) return loadLocal('webllm');
           if (out.chromeai) return loadLocal('chrome');
-          return summarizeOr(out, hit.tool.label, voice);
+          return await summarizeOr(out, hit.tool.label, voice);
         }
         const r = await ask(text, voice);
         const { id, streamed, ...rest } = r;
