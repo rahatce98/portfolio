@@ -268,3 +268,4 @@ body[data-theater] .orb { display: block; }
 }
 body[data-jv-hands='1'] .orb { --st: 255, 138, 120; }
 body[data-jv-hands='1'] .orb .orb__ring { animation-duration: 1.6s; }
+.jv2__form .jv2__hint { color: #7d8aa0; font-size: 0.7rem; }

@@ -265,6 +265,46 @@ export default function JarvisHUD({ overlay = false, onClose }) {
     j.prefill(pre);
   };
 
+  const Bottom = (
+    <div className="hud__bottom">
+      <Panel title="System monitor">
+        <div className="hud-gauges">
+          <Gauge label="FPS" value={tele.fps} unit="" max={60} />
+          <Gauge label="Load" value={tele.load} sub="main thread" />
+          <Gauge label={tele.heap != null ? 'Memory' : 'Storage'} value={tele.heap != null ? tele.heap : tele.storage} sub={tele.heap != null ? 'JS heap' : 'site data'} />
+        </div>
+      </Panel>
+      <Panel title="Memory insights">
+        <div className="hud-mem">
+          <Constellation n={mems} />
+          <dl>
+            <dt>Memories</dt>
+            <dd>{mems}</dd>
+            <dt>Session turns</dt>
+            <dd>{turns}</dd>
+            <dt>Tool calls</dt>
+            <dd>{calls}</dd>
+          </dl>
+        </div>
+      </Panel>
+      <Panel title="Quick commands">
+        <div className="hud-quick">
+          {[
+            ['Executive briefing', 'briefing', 'M4 4h16v12H5.2L4 17.2zM8 9h8M8 12h5'],
+            ['Switch brain', 'switch brain', 'M4 12a8 8 0 0 1 14-5.3M20 4v4h-4M20 12a8 8 0 0 1-14 5.3M4 20v-4h4'],
+            ['Today’s news', "today's news", 'M4 5h13v14H6a2 2 0 0 1-2-2zM17 9h3v8a2 2 0 0 1-2 2M8 9h5M8 13h5'],
+            ['Open my tools', 'show my tools', 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'],
+          ].map(([l, c, d]) => (
+            <button type="button" key={l} onClick={() => (setTab('chat'), j.run(c))}>
+              <Ico d={d} />
+              {l}
+            </button>
+          ))}
+        </div>
+      </Panel>
+    </div>
+  );
+
   const Core = (
     <div className="hud-core" data-state={j.state}>
       {gl ? (
@@ -275,7 +315,11 @@ export default function JarvisHUD({ overlay = false, onClose }) {
       <div className="hud-core__label">
         <b>JARVIS</b>
         <span>AI CORE</span>
-        <em className="mono">v6 · {j.provider ? PROVIDERS.find((p) => p.id === j.provider)?.label : 'built-in'}</em>
+        <em className="hud-core__brain mono" data-ok={!!j.provider}>
+          <i />
+          Brain · {j.provider ? PROVIDERS.find((p) => p.id === j.provider)?.label : 'built-in commands'}
+          {j.provider && j.brain.status[j.provider]?.detail === 'via your cloud bridge' ? ' · cloud' : ''}
+        </em>
       </div>
       <div className="hud-core__state mono">
         <i />
@@ -387,6 +431,7 @@ export default function JarvisHUD({ overlay = false, onClose }) {
             {j.hands ? 'Hands-free on' : 'Hands-free mode'}
           </button>
         </Panel>
+        {overlay && Bottom}
       </div>
 
       {/* ------------------------------------------------------- centre --- */}
@@ -487,53 +532,14 @@ export default function JarvisHUD({ overlay = false, onClose }) {
                 <span className="mono">{b.s?.ok ? (j.provider === b.id ? 'Leading' : 'Connected') : b.s?.can ? 'Tap to install' : b.s?.detail || 'Not checked'}</span>
               </button>
             ))}
-            {!j.keys && (
-              <button type="button" className="hud-cta" onClick={() => (setTab('chat'), j.run('add keys'))}>
-                + Add API keys (once per browser)
-              </button>
-            )}
+            <button type="button" className="hud-cta" onClick={() => (setTab('chat'), j.run('add keys'))}>
+              + Add a new AI key
+            </button>
           </div>
         )}
       </div>
 
-      {/* ------------------------------------------------------- bottom --- */}
-      <div className="hud__bottom">
-        <Panel title="System monitor">
-          <div className="hud-gauges">
-            <Gauge label="FPS" value={tele.fps} unit="" max={60} />
-            <Gauge label="Load" value={tele.load} sub="main thread" />
-            <Gauge label={tele.heap != null ? 'Memory' : 'Storage'} value={tele.heap != null ? tele.heap : tele.storage} sub={tele.heap != null ? 'JS heap' : 'site data'} />
-          </div>
-        </Panel>
-        <Panel title="Memory insights">
-          <div className="hud-mem">
-            <Constellation n={mems} />
-            <dl>
-              <dt>Memories</dt>
-              <dd>{mems}</dd>
-              <dt>Session turns</dt>
-              <dd>{turns}</dd>
-              <dt>Tool calls</dt>
-              <dd>{calls}</dd>
-            </dl>
-          </div>
-        </Panel>
-        <Panel title="Quick commands">
-          <div className="hud-quick">
-            {[
-              ['Executive briefing', 'briefing', 'M4 4h16v12H5.2L4 17.2zM8 9h8M8 12h5'],
-              ['Switch brain', 'switch brain', 'M4 12a8 8 0 0 1 14-5.3M20 4v4h-4M20 12a8 8 0 0 1-14 5.3M4 20v-4h4'],
-              ['Today’s news', "today's news", 'M4 5h13v14H6a2 2 0 0 1-2-2zM17 9h3v8a2 2 0 0 1-2 2M8 9h5M8 13h5'],
-              ['Open my tools', 'show my tools', 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z'],
-            ].map(([l, c, d]) => (
-              <button type="button" key={l} onClick={() => (setTab('chat'), j.run(c))}>
-                <Ico d={d} />
-                {l}
-              </button>
-            ))}
-          </div>
-        </Panel>
-      </div>
+      {!overlay && Bottom}
 
       {/* --------------------------------------------------------- dock --- */}
       <footer className="hud__dock">

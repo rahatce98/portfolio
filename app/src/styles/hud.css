@@ -336,3 +336,50 @@
   -webkit-mask-image: radial-gradient(ellipse 60% 58% at 50% 48%, #000 55%, transparent 100%);
 }
 .hud-core__label span { text-shadow: 0 0 10px rgba(3, 7, 18, 0.9), 0 0 18px rgba(var(--st), 0.8); }
+
+/* --- brain badge on the core ---------------------------------------------- */
+.hud-core__label .hud-core__brain { display: inline-flex; align-items: center; gap: 7px; margin-top: 6px; padding: 4px 12px; border: 1px solid rgba(var(--st), 0.4); border-radius: 99px; background: rgba(3, 7, 18, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); font-size: 0.66rem; letter-spacing: 0.08em; color: var(--hud-warn); }
+.hud-core__brain i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+.hud-core__brain[data-ok='true'] { color: var(--hud-ok); }
+
+/* --- full screen: the core is the hero ------------------------------------ */
+.hud[data-overlay] {
+  grid-template-columns: minmax(250px, 300px) minmax(0, 1fr) minmax(320px, 400px);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'top top top'
+    'left core right'
+    'left agents right'
+    'dock dock dock';
+}
+.hud[data-overlay] .hud__left { padding-right: 2px; scrollbar-width: thin; }
+.hud[data-overlay] .hud__left .hud__bottom { grid-area: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.hud[data-overlay] .hud__core { min-height: 0; }
+.hud[data-overlay] .hud-core__label b { font-size: clamp(2.2rem, 4.6vw, 4.2rem); }
+.hud[data-overlay] .hud-core__label span { font-size: 0.9rem; }
+.hud[data-overlay] .hud-core .core3d {
+  mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 62% at 50% 50%, #000 60%, transparent 100%);
+}
+/* agents become a slim strip under the core */
+.hud[data-overlay] .hud__agents .hud-panel { padding: 10px 12px; }
+.hud[data-overlay] .hud__agents .hud-panel > header { margin-bottom: 8px; }
+.hud[data-overlay] .hud-agents { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.hud[data-overlay] .hud-agent { grid-template-columns: 28px minmax(0, 1fr); padding: 7px 8px; }
+.hud[data-overlay] .hud-agent__ico { width: 28px; height: 28px; grid-row: span 2; }
+.hud[data-overlay] .hud-agent em, .hud[data-overlay] .hud-agent__bars { display: none; }
+.hud[data-overlay] .hud-agent b { font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 1180px) {
+  .hud[data-overlay] { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); grid-template-areas: 'top top' 'core right' 'agents right' 'left left' 'dock dock'; grid-template-rows: auto minmax(420px, 1fr) auto auto auto; overflow-y: auto; }
+  .hud[data-overlay] .hud-agents { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hud[data-overlay] .hud__left .hud__bottom { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-column: 1 / -1; }
+}
+@media (max-width: 860px) {
+  .hud[data-overlay] { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'top' 'core' 'right' 'agents' 'left' 'dock'; grid-template-rows: none; }
+  .hud[data-overlay] .hud__core { min-height: 340px; }
+  .hud[data-overlay] .hud-agents { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hud[data-overlay] .hud__left .hud__bottom { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 1181px) and (max-width: 1680px) {
+  .hud[data-overlay] .hud-agents { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

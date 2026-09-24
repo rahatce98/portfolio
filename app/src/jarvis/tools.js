@@ -563,7 +563,7 @@ export const TOOLS = [
           : /^(forget|remove|delete|clear) (all |my )?(ai |api )?keys$/.test(s)
             ? { forget: true }
             : null,
-    run: ({ show, forget }) => {
+    run: ({ show, forget }, ctx) => {
       const k = keyKinds();
       if (forget)
         return {
@@ -571,7 +571,7 @@ export const TOOLS = [
           confirm: { title: 'Forget all AI keys on this device?', detail: k.map((x) => KEY_KINDS[x]?.label || x).join(', ') || 'none stored', yes: () => (forgetKeys(), { text: 'Keys removed from this device.' }) },
         };
       if (show) return { text: k.length ? `Keys on this device: ${k.map((x) => KEY_KINDS[x]?.label || x).join(', ')}.` : 'No keys on this device yet.', form: 'keys' };
-      return { form: 'keys', text: 'Paste your keys — any format, all at once. I recognise Unikey, Groq, Google AI Studio, OpenRouter and OpenCode by prefix. They stay in this browser and go straight to each provider.' };
+      return { form: 'keys', text: ctx.pin ? 'Paste the new key(s) — any format. I recognise Unikey, Groq, Google AI Studio, OpenRouter and OpenCode by prefix, and save them to your cloud bridge so every browser and device gets them.' : 'Paste the new key(s). Unlock with your owner PIN first (say “unlock”) and I’ll save them to your cloud bridge for every device — otherwise they stay in this browser.' };
     },
   },
   {

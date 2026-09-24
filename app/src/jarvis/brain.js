@@ -173,12 +173,18 @@ async function detectPollinations() {
   }
 }
 
+/* The owner's Apps Script bridge holds the AI keys server-side, so every
+   browser and device gets the keyed brains with no setup. */
+const viaBridge = new Set(); // brain ids the bridge can serve
 async function detectBridge() {
   const s = await bridgeStatus();
+  viaBridge.clear();
   if (s.unauth) return { ok: false, detail: 'awaiting one-time authorisation' };
   if (!s.ok) return { ok: false, detail: s.error || 'unreachable' };
-  return s.ai?.length ? { ok: true, detail: s.ai.join(' → ') } : { ok: false, detail: 'no key stored on the bridge' };
+  (s.brains || []).forEach((id) => viaBridge.add(id));
+  return s.ai?.length ? { ok: true, detail: `${s.ai.length} keys server-side` } : { ok: false, detail: 'no key stored on the bridge' };
 }
+const bridged = (b) => b.key && !getKey(b.key) && viaBridge.has(b.id);
 
 /* A keyed vendor is checked once with its free model-list endpoint. */
 const vendorProbe = {};
@@ -206,10 +212,13 @@ function detectWebllm() {
 
 /** Probe every brain; `onStep(id, result)` fires as each settles. */
 export async function detect(onStep, { local = false, owner = false } = {}) {
+  void owner;
+  status.bridge = online() ? await detectBridge() : { ok: false, detail: 'offline' };
+  onStep?.('bridge', status.bridge);
   const kinds = [...new Set(BRAINS.filter((b) => b.key).map((b) => b.key))];
   const vendors = Object.fromEntries(await Promise.all(kinds.map(async (k) => [k, online() ? await probeVendor(k) : getKey(k) ? { ok: true, detail: 'key stored (offline now)' } : { ok: false, detail: 'no key — say “add keys”' }])));
   for (const b of BRAINS.filter((x) => x.key)) {
-    status[b.id] = vendors[b.key];
+    status[b.id] = keyedStatus(b, vendors[b.key]);
     onStep?.(b.id, status[b.id]);
   }
   // Probing localhost can trigger a local-network permission prompt, so
@@ -219,7 +228,6 @@ export async function detect(onStep, { local = false, owner = false } = {}) {
     chrome: detectBrowser,
     // The bridge is the owner's own Apps Script — visitors never need it, so
     // it is only contacted in an unlocked owner session.
-    bridge: !online() ? async () => ({ ok: false, detail: 'offline' }) : owner ? detectBridge : async () => ({ ok: false, detail: 'owner only — say “unlock”' }),
     webllm: async () => detectWebllm(),
     // The anonymous tier is a last resort; don't spend a request on it when
     // a keyed brain is already available.
@@ -239,9 +247,16 @@ export async function refreshKeyed() {
   for (const k of Object.keys(vendorProbe)) delete vendorProbe[k];
   const kinds = [...new Set(BRAINS.filter((b) => b.key).map((b) => b.key))];
   const vendors = Object.fromEntries(await Promise.all(kinds.map(async (k) => [k, await probeVendor(k)])));
-  for (const b of BRAINS.filter((x) => x.key)) status[b.id] = vendors[b.key];
+  for (const b of BRAINS.filter((x) => x.key)) status[b.id] = keyedStatus(b, vendors[b.key]);
   if (status.pollinations && keyKinds().length) status.pollinations = { ok: true, detail: 'last-resort fallback' };
   return brainState();
+}
+
+/* A key on this device wins (direct, streamed); otherwise the bridge serves it. */
+function keyedStatus(b, direct) {
+  if (direct?.ok) return direct;
+  if (viaBridge.has(b.id) && online()) return { ok: true, detail: 'via your cloud bridge' };
+  return direct;
 }
 
 export const available = () => BRAINS.filter((b) => status[b.id]?.ok && (online() || !CLOUD.has(b.id))).map((b) => b.id);
@@ -461,9 +476,14 @@ async function callWebllm(messages, onToken) {
   return out;
 }
 
-async function callBridge(messages) {
-  const j = await bridge({ a: 'ai', messages, pin: bridgePin });
-  return j.text;
+async function callBridge(messages, brain) {
+  try {
+    const j = await bridge({ a: 'ai', messages, pin: bridgePin, brain });
+    return j.text;
+  } catch (e) {
+    // The bridge already tried its whole chain — don't ask it again per brain.
+    throw Object.assign(e, { bridge: true });
+  }
 }
 let bridgePin = '';
 export const setBridgePin = (p) => (bridgePin = p || '');
@@ -471,6 +491,11 @@ export const setBridgePin = (p) => (bridgePin = p || '');
 async function callBrain(b, messages, onToken) {
   // A brain the user picked by name gets longer to start thinking.
   const firstMs = prefer === b.id ? 35000 : FIRST_MS;
+  if (bridged(b)) {
+    const t = await callBridge(messages, b.id);
+    onToken?.(t, t);
+    return t;
+  }
   if (b.key) {
     const key = getKey(b.key);
     if (!key) throw new Error('no key');
@@ -504,7 +529,7 @@ async function callBrain(b, messages, onToken) {
   if (b.id === 'chrome') return callBrowser(messages, onToken);
   if (b.id === 'webllm') return callWebllm(messages, onToken);
   if (b.id === 'ollama') return once(callOllama(messages));
-  if (b.id === 'bridge') return once(callBridge(messages));
+  if (b.id === 'bridge') return once(callBridge(messages, ''));
   if (b.id === 'pollinations') return once(callPollinations(messages));
   throw new Error('unknown brain');
 }
@@ -527,12 +552,18 @@ export async function think(messages, opts = {}) {
     delete down[id];
     return { text: text.trim(), provider: id, label: brainById(id).label, ms: Math.round(performance.now() - t0), started };
   };
+  let bridgeDead = false;
   for (const id of order()) {
+    if (bridgeDead && (id === 'bridge' || bridged(brainById(id)))) continue;
     try {
       return await attempt(id);
     } catch (e) {
       errors.push(`${brainById(id).label}: ${e.message || e}`);
       down[id] = Date.now() + (e.status === 401 || e.status === 403 ? 3600e3 : 60e3);
+      if (e.bridge) {
+        bridgeDead = true;
+        for (const b of BRAINS) if (bridged(b) || b.id === 'bridge') down[b.id] = Date.now() + 45e3;
+      }
       o.onReset?.(id, e);
     }
   }

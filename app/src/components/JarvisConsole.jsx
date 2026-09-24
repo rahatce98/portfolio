@@ -1,8 +1,8 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { useJarvis, suggest, SETUP, COMMANDS, STATE_LABEL } from '../jarvis/engine';
-import { PROVIDERS, BRAINS, brainById, refreshKeyed, available, activeProvider } from '../jarvis/brain';
+import { PROVIDERS, available } from '../jarvis/brain';
 import { bridge } from '../jarvis/memory';
-import { parseKeys, addKeys, KEY_KINDS, mask } from '../jarvis/keys';
+import { parseKeys, KEY_KINDS, mask } from '../jarvis/keys';
 import { useHistory } from '../os/history';
 import { TYPES } from '../os/searchIndex';
 
@@ -67,7 +67,7 @@ export function ProviderPanel({ variant = 'chips' }) {
           </button>
         );
       })}
-      {!keys && (
+      {!keys && !available().length && (
         <button type="button" className="jv2__addkeys" onClick={() => run('add keys')}>
           + add keys
         </button>
@@ -140,7 +140,7 @@ const JarvisConsole = forwardRef(function JarvisConsole({ compact = false }, inp
       {!compact && (
         <div className="jv2__bar">
           <span className="mono">jarvis@rahat-os</span>
-          <span className="jv2__cost mono">{j.keys ? `${j.keys} key${j.keys > 1 ? 's' : ''} · this device only` : 'no keys in the site'}</span>
+          <span className="jv2__cost mono">{available().length ? `${available().length} brains · keys server-side` : 'built-in commands'}</span>
           {j.canSpeak && (
             <button type="button" className="jv2__tog" aria-pressed={j.speak} onClick={() => j.toggleVoice(!j.speak)}>
               {j.speak ? 'voice on' : 'voice off'}
@@ -359,7 +359,7 @@ function Message({ m, onPick }) {
           </div>
         )}
         {m.form === 'notion' && <NotionForm pin={j.pin} push={j.push} />}
-        {m.form === 'keys' && <KeysForm pin={j.pin} push={j.push} setBrain={j.setBrain} />}
+        {m.form === 'keys' && <KeysForm pin={j.pin} run={j.run} />}
         {m.via && (
           <small className="jv2__via mono">
             via {m.via}
@@ -401,51 +401,28 @@ function NotionForm({ pin, push }) {
 /* Paste-anything key form. Keys are detected by prefix, kept in this
    browser, and (optionally, owner only) copied to the Apps Script bridge so
    other devices can use them server-side. */
-function KeysForm({ pin, push, setBrain }) {
+function KeysForm({ pin, run }) {
   const [text, setText] = useState('');
-  const [share, setShare] = useState(false);
-  const [msg, setMsg] = useState('');
+  const [sent, setSent] = useState(false);
   const found = parseKeys(text);
   const n = Object.keys(found).length;
-  const submit = async (e) => {
+  const submit = (e) => {
     e.preventDefault();
-    if (!n) return setMsg('No key recognised. Paste the full key(s).');
-    addKeys(found);
-    setText('');
-    setMsg('Checking…');
-    const b = await refreshKeyed();
-    setBrain(b);
-    const lines = Object.entries(found).map(([k, v]) => `${KEY_KINDS[k].label} ${mask(v)}: ${b.status[BRAINS.find((x) => x.key === k)?.id]?.detail || 'stored'}`);
-    if (share && pin) {
-      for (const [k, v] of Object.entries(found)) {
-        if (!['gemini', 'groq', 'unikey', 'opencode'].includes(k)) continue;
-        try {
-          await bridge({ a: 'setkey', pin, kind: k, key: v });
-          lines.push(`${KEY_KINDS[k].label}: copied to the bridge`);
-        } catch (x) {
-          lines.push(`${KEY_KINDS[k].label}: bridge — ${x.message}`);
-        }
-      }
-    }
-    setMsg('done');
-    push({ who: 'ai', text: `Keys saved on this device.\n${lines.map((l) => `- ${l}`).join('\n')}\n${available().length} brains online — primary **${brainById(activeProvider())?.label || 'none'}**. Say “switch brain” to change.` });
+    if (!n) return;
+    setSent(true);
+    run(text); // the engine stores it, syncs it to the bridge and re-ranks brains
   };
-  if (msg === 'done') return null;
+  if (sent) return null;
   return (
     <form className="jv2__form" onSubmit={submit}>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste keys here — e.g. sk-…, gsk_…, AQ.…, AIza…, oc_sk_…" rows={3} autoComplete="off" spellCheck="false" aria-label="API keys" />
+      <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste keys here — e.g. sk-…, gsk_…, AQ.…, AIza…, oc_sk_…, sk-or-…" rows={3} autoComplete="off" spellCheck="false" aria-label="API keys" />
       <div className="jv2__found mono">
         {n ? Object.entries(found).map(([k, v]) => <span key={k}>✓ {KEY_KINDS[k].label} {mask(v)}</span>) : <span className="is-hint">keys are recognised as you paste</span>}
       </div>
-      {pin && (
-        <label className="jv2__chk">
-          <input type="checkbox" checked={share} onChange={(e) => setShare(e.target.checked)} /> also store on my bridge for other devices
-        </label>
-      )}
+      <small className="jv2__hint">{pin ? 'Saved to your cloud bridge — every browser and device gets it.' : 'Unlocked owner mode saves it for every device; otherwise this browser only.'}</small>
       <button type="submit" disabled={!n}>
-        Save {n || ''} key{n === 1 ? '' : 's'}
+        Add {n || ''} key{n === 1 ? '' : 's'}
       </button>
-      {msg && <small>{msg}</small>}
     </form>
   );
 }

@@ -5,7 +5,7 @@ import { useScrollTo } from '../hooks/useScroll';
 import { detect, think, brainState, setPrefer, loadWebllm, loadChrome, activeProvider, PROVIDERS, brainKind, brainById, refreshKeyed, setBridgePin, available } from './brain';
 import { route, TOOLS, MODEL_CALLABLE } from './tools';
 import { pingWeb } from './web';
-import { memoryContext, bridgeStatus } from './memory';
+import { memoryContext, bridgeStatus, bridge } from './memory';
 import { parseKeys, addKeys, keyKinds, onKeys, KEY_KINDS, mask } from './keys';
 import { Speaker, Listener, WAKE, canSpeak as CAN_SPEAK, canRecognise, canRecord } from './voice';
 import { execute, validate, actionCatalog, ACTIONS } from '../os/actions';
@@ -71,6 +71,28 @@ const ls = {
   },
 };
 
+/* New keys go to the owner's bridge so every browser and device gets them.
+   Needs the owner PIN (the same one that unlocks the Tools index). */
+const SERVER_KINDS = ['gemini', 'groq', 'unikey', 'opencode', 'openrouter'];
+async function syncKeysToBridge(found, pin) {
+  if (!pin) return { ok: false, why: 'locked' };
+  const st = await bridgeStatus();
+  if (!st.ok) return { ok: false, why: st.error || 'bridge unreachable' };
+  if (!st.pin) await bridge({ a: 'setup', pin }).catch(() => null);
+  const done = [];
+  const failed = [];
+  for (const [k, v] of Object.entries(found)) {
+    if (!SERVER_KINDS.includes(k)) continue;
+    try {
+      await bridge({ a: 'setkey', pin, kind: k, key: v });
+      done.push(k);
+    } catch (e) {
+      failed.push(`${KEY_KINDS[k].label}: ${e.message}`);
+    }
+  }
+  return { ok: !failed.length, done, failed };
+}
+
 function greet() {
   const h = new Date().getHours();
   return h < 5 ? 'Working late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
@@ -109,7 +131,7 @@ Never invent live data such as prices, weather or news. Never claim to have done
 export function suggest(q, tools) {
   const s = q.trim().toLowerCase();
   if (!s)
-    return keyKinds().length
+    return available().length || keyKinds().length
       ? ['switch brain', 'hands free', 'open RFI', 'velocity for 300 mm pipe at 40 L/s', 'weather in Dhaka', 'brains']
       : ['add keys', 'hands free', 'open RFI', 'velocity for 300 mm pipe at 40 L/s', 'weather in Dhaka', 'quick tools'];
   const v = COMMANDS.map((c) => c.prefill.trim()).filter((x) => x && x.startsWith(s) && x !== s);
@@ -152,6 +174,7 @@ export function JarvisProvider({ children }) {
   const runRef = useRef(null);
   const listenerRef = useRef(null);
   const logHasLoader = useRef(false);
+  const pendingSync = useRef({});
 
   const canListen = canRecognise || canRecord;
   const canSpeak = CAN_SPEAK;
@@ -171,7 +194,15 @@ export function JarvisProvider({ children }) {
 
   useEffect(() => {
     setBridgePin(pin);
-  }, [pin]);
+    const pend = pendingSync.current;
+    if (!pin || !Object.keys(pend).length) return;
+    syncKeysToBridge(pend, pin).then((r) => {
+      if (!r.ok) return;
+      pendingSync.current = {};
+      push({ who: 'sys', text: `Copied ${r.done.map((k) => KEY_KINDS[k].label).join(', ')} to your cloud bridge — every device has them now.` });
+      detect(() => {}, {}).then(setBrain);
+    });
+  }, [pin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ------------------------------------------------------------ voice --- */
   const speaker = useMemo(
@@ -589,9 +620,13 @@ export function JarvisProvider({ children }) {
       if (Object.keys(found).length) {
         push({ who: 'me', text: '•••• API keys (hidden)', source: via });
         addKeys(found);
+        const names = Object.entries(found).map(([k, v]) => `${KEY_KINDS[k].label} (${mask(v)})`).join(', ');
+        const sync = await syncKeysToBridge(found, pin);
         const b = await refreshKeyed();
         setBrain(b);
-        return answer({ text: `Stored ${Object.entries(found).map(([k, v]) => `${KEY_KINDS[k].label} (${mask(v)})`).join(', ')} on this device only. ${available().length} brains online — primary **${brainById(activeProvider())?.label || 'none'}**.` });
+        const where = sync.ok ? 'on this device and on your cloud bridge — every browser and device has it now' : sync.why === 'locked' ? 'on this device. Say “unlock” once and I’ll copy it to your cloud bridge for every device' : `on this device (bridge: ${sync.why || sync.failed?.join('; ')})`;
+        if (!sync.ok) pendingSync.current = { ...pendingSync.current, ...found };
+        return answer({ text: `Added ${names} ${where}. ${available().length} brains online — primary **${brainById(activeProvider())?.label || 'none'}**.` });
       }
       push({ who: 'me', text: shown, source: via });
       addHistory(shown, via);
